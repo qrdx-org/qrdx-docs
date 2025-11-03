@@ -8,8 +8,7 @@
 		"ghcr.io/devcontainers-extra/features/mkdocs:2": {},
 		"ghcr.io/devcontainers-extra/features/pipenv:2": {},
 		"ghcr.io/devcontainers-community/npm-features/typescript:1": {},
-		"ghcr.io/devcontainers-extra/features/bun:1": {},
-		"ghcr.io/devcontainers-extra/features/pnpm:2": {}
+		"ghcr.io/devcontainers-extra/features/pnpm:2": {},
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.

@@ -1,0 +1,147 @@
+@font-face {
+  font-family: 'Unbounded';
+  src: url('./fonts/Unbounded-Regular.ttf') format('opentype');
+}
+
+.row {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.col {
+    flex: 1;
+    margin: 10px;
+    text-align: center;
+}
+
+.col img {
+    max-width: 100%;
+    height: auto;
+}
+
+.col a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.col a:hover {
+    color: #00d4ff;
+    /* Add hover effect */
+}
+
+.row {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.md-nav__item a[target="_blank"]::after {
+    content: url('../images/external_item.svg');
+}
+
+/* Card container: Entire card is clickable */
+.card-container {
+    height: 450px;
+    /* Adjusted height for description */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #4a4a4a;
+    border-radius: 10px;
+    background-color: #2a2a2a;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
+    text-decoration: none !important;
+    color: inherit;
+}
+
+/* Dark mode card container */
+[data-md-color-scheme='slate'] .card-container {
+    background-color: #1a1a1a;
+    border: 1px solid #00d4ff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: normal;
+}
+
+.card-container:hover {
+    transform: scale(1.05); /* Gradual zoom effect */
+    box-shadow: 0 8px 16px rgba(0, 212, 255, 0.6), /* Cyan glow */
+                0 0 15px rgba(0, 212, 255, 0.5); /* Enhanced glow */
+    background-color: #3a3a3a;
+    /* Optional: Slight color change on hover */
+}
+
+/* Dark mode card hover */
+[data-md-color-scheme='slate'] .card-container:hover {
+    background-color: #0a0a0a;
+    box-shadow: 0 8px 16px rgba(0, 212, 255, 0.8), 
+                0 0 20px rgba(0, 212, 255, 0.6);
+}
+
+/* Image inside the card */
+.card-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 5px;
+    object-fit: contain;
+    /* Ensures images fit nicely */
+    max-height: 250px;
+    /* Keeps image height consistent */
+}
+
+/* Title text inside the card */
+.card-title {
+    margin-top: 5px;
+    font-weight: bold;
+    color: #00d4ff;
+    text-align: center;
+}
+
+/* Dark mode card title */
+[data-md-color-scheme='slate'] .card-title {
+    color: #00d4ff;
+}
+
+.title {
+    font-size: 25px;
+}
+
+/* Description text inside the card */
+.card-description {
+    font-size: 16px;
+    color: #555;
+    text-align: center;
+    margin-top: 5px;
+    line-height: 1.4;
+    /* Better spacing for multi-line descriptions */
+}
+
+/* Dark mode card description */
+[data-md-color-scheme='slate'] .card-description {
+    color: #9ca3af;
+}
+
+.md-search-result__meta {
+    display: none;
+}
+
+@media only screen and (max-width: 600px) {
+    .row {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media only screen and (min-width: 600px) {
+    .card-container {
+        width: 500px;
+    }
+}

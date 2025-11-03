@@ -71,11 +71,11 @@ theme:
 # Plugins
 plugins:
   - search
-  - mkdocstrings:
-      handlers:
-        python:
-          options:
-            show_source: true
+  #- mkdocstrings:
+  #    handlers:
+  #      python:
+  #        options:
+  #          show_source: true
   #- awesome-pages
   #- macros:
   #    module_name: macros/rpc
@@ -87,6 +87,8 @@ extra:
       link: https://x.com/qrdx_org/
     - icon: fontawesome/brands/github
       link: https://github.com/qrdx-org/
+    - icon: fontawesome/brands/telegram
+      link: https://t.me/qrdx_org
     - icon: fontawesome/brands/discord
       link: https://docs.qrdx.org/community/discord
 

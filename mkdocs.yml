@@ -1,0 +1,133 @@
+# Project information
+site_name: QRDX Documentation
+site_url: https://docs.qrdx.org
+site_author: QRDX Authors
+copyright: Copyright &copy; 2025 QRDX
+extra_javascript:
+  - js/MessageBox.js
+  - js/simple-analytics.js
+  - js/root-level-sections.js
+  - js/search-bar-results.js
+  - js/header-scroll.js
+#  - js/sponsors.js
+#  - js/sponsor-iframe.js
+#  - js/homepage-light-mode.js
+#  - js/dynamic-logo.js
+extra_css:
+  - assets/stylesheets/extra.css
+  - assets/stylesheets/MessageBox.css
+  - assets/stylesheets/announcement-bar.css
+  - assets/stylesheets/terminal.css
+  - assets/stylesheets/timeline-neoteroi.css
+
+# Repository
+repo_name: qrdx-org/qrdx-docs
+repo_type: github
+repo_url: https://github.com/qrdx-org/qrdx-docs
+
+# Configuration
+theme:
+  name: material
+  custom_dir: material-overrides
+  favicon: assets/images/favicon.ico
+  logo: assets/images/logo.webp
+  icon:
+    edit: material/github
+    admonition:
+      code: material/code-tags
+  font:
+    text: Manrope
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: white
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: white
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.annotate # Adds annotations to code blocks
+    - content.code.copy # Adds copy to clipboard button to code snippets
+    - content.tooltips # Adds tooltips
+    - navigation.footer # Shows previous and next on the footer
+    # - navigation.tabs # Top-level sections are rendered below the header (can be modified to in-line with CSS)
+    # - navigation.tabs.sticky # When scrolling, the tabs remain at the top of the page
+    - navigation.sections # Render top-level sections as groups in the sidebar
+    - navigation.indexes # Index pages
+    - navigation.top # Show the back to top button since we don't keep top nav sticky
+    - content.action.edit
+    - content.action.report # Show report an issue button
+    - sponsors # Show the sponsors section in the footer
+
+# Plugins
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+  #- awesome-pages
+  #- macros:
+  #    module_name: macros/rpc
+
+# Additional configuration
+extra:
+  social:
+    - icon: fontawesome/brands/x-twitter
+      link: https://x.com/qrdx_org/
+    - icon: fontawesome/brands/github
+      link: https://github.com/qrdx-org/
+    - icon: fontawesome/brands/discord
+      link: https://docs.qrdx.org/community/discord
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  #- pymdownx.snippets:
+  #      auto_append:
+  #          - includes/definitions.md
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+  - codehilite
+  - tables
+  - sane_lists
+  - pymdownx.critic
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde

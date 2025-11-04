@@ -4,6 +4,7 @@ site_url: https://docs.qrdx.org
 site_author: QRDX Authors
 copyright: Copyright &copy; 2025 QRDX
 extra_javascript:
+  - js/announcement-bar.js
   - js/MessageBox.js
   - js/simple-analytics.js
   - js/root-level-sections.js

@@ -1,0 +1,221 @@
+/* Terminal Component - Black & White Theme */
+
+.terminal {
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  border-radius: 6px;
+  margin: 1.5rem 0;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.terminal__header {
+  background-color: var(--md-default-bg-color--light);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+[data-md-color-scheme="slate"] .terminal__header {
+  background-color: var(--md-default-bg-color--lighter);
+}
+
+.terminal__button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background-color: var(--md-default-bg-color);
+}
+
+.terminal__button--close {
+  background-color: var(--md-default-fg-color--lighter);
+}
+
+.terminal__button--minimize {
+  background-color: var(--md-default-fg-color--lighter);
+}
+
+.terminal__button--maximize {
+  background-color: var(--md-default-fg-color--lighter);
+}
+
+.terminal__title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+}
+
+.terminal__body {
+  padding: 1.5rem;
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+[data-md-color-scheme="default"] .terminal__body {
+  background-color: var(--qrdx-black);
+  color: var(--qrdx-white);
+}
+
+[data-md-color-scheme="slate"] .terminal__body {
+  background-color: var(--qrdx-gray-900);
+  color: var(--qrdx-gray-100);
+}
+
+.terminal__prompt {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.terminal__prompt-symbol {
+  color: var(--md-primary-bg-color);
+  margin-right: 0.5rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+[data-md-color-scheme="default"] .terminal__prompt-symbol {
+  color: var(--qrdx-white);
+}
+
+[data-md-color-scheme="slate"] .terminal__prompt-symbol {
+  color: var(--qrdx-gray-100);
+}
+
+.terminal__command {
+  color: var(--md-primary-bg-color);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+[data-md-color-scheme="default"] .terminal__command {
+  color: var(--qrdx-white);
+}
+
+[data-md-color-scheme="slate"] .terminal__command {
+  color: var(--qrdx-gray-100);
+}
+
+.terminal__output {
+  margin-left: 0;
+  padding-left: 0;
+  color: var(--md-primary-bg-color);
+  opacity: 0.9;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+[data-md-color-scheme="default"] .terminal__output {
+  color: var(--qrdx-gray-200);
+}
+
+[data-md-color-scheme="slate"] .terminal__output {
+  color: var(--qrdx-gray-300);
+}
+
+.terminal__cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.2em;
+  background-color: var(--md-primary-bg-color);
+  margin-left: 2px;
+  animation: blink 1s infinite;
+  vertical-align: text-bottom;
+}
+
+[data-md-color-scheme="default"] .terminal__cursor {
+  background-color: var(--qrdx-white);
+}
+
+[data-md-color-scheme="slate"] .terminal__cursor {
+  background-color: var(--qrdx-gray-100);
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Terminal Line Numbers */
+.terminal__line {
+  display: flex;
+  align-items: flex-start;
+}
+
+.terminal__line-number {
+  color: var(--md-default-fg-color--lighter);
+  margin-right: 1rem;
+  user-select: none;
+  min-width: 2ch;
+  text-align: right;
+  opacity: 0.5;
+}
+
+/* Terminal Copy Button */
+.terminal__copy {
+  position: relative;
+}
+
+.terminal__copy-button {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background-color: var(--md-default-bg-color--light);
+  color: var(--md-default-fg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.terminal__copy-button:hover {
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  border-color: var(--md-primary-fg-color);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .terminal__body {
+    padding: 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .terminal__header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .terminal__title {
+    font-size: 0.8rem;
+  }
+}
+
+/* Code highlighting in terminal */
+.terminal__body code {
+  background-color: transparent;
+  color: inherit;
+  border: none;
+  padding: 0;
+}
+
+.terminal__body pre {
+  margin: 0;
+  background-color: transparent;
+}

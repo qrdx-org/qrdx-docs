@@ -6,14 +6,27 @@
   --storm-gray: #6e7391;
   --black: #000000;
 
-  /* Primary color */
-  --cyan: #00d4ff;
+  /* QRDX Black & White Theme */
+  --qrdx-black: #000000;
+  --qrdx-white: #ffffff;
+  --qrdx-gray-100: #f5f5f5;
+  --qrdx-gray-200: #e5e5e5;
+  --qrdx-gray-300: #d4d4d4;
+  --qrdx-gray-400: #a3a3a3;
+  --qrdx-gray-500: #737373;
+  --qrdx-gray-600: #525252;
+  --qrdx-gray-700: #404040;
+  --qrdx-gray-800: #262626;
+  --qrdx-gray-900: #171717;
 
-  /* Secondary colors */
-  --chartreuse: #e4ff07;
-  --blue-ribbon: #383bff;
-  --aqua: #07ffff;
-  --electric-violet: #7204ff;
+  /* Primary color - Using black/white instead of cyan */
+  --cyan: var(--qrdx-black);
+
+  /* Secondary colors - Monochrome variants */
+  --chartreuse: var(--qrdx-gray-800);
+  --blue-ribbon: var(--qrdx-gray-700);
+  --aqua: var(--qrdx-gray-600);
+  --electric-violet: var(--qrdx-gray-900);
 
   --md-hover-opacity: 0.7;
   --max-page-width: 1600px;
@@ -24,51 +37,52 @@
 
 :root,
 [data-md-color-scheme='default'] {
-  --md-default-fg-color: var(--storm-gray);
-  --md-default-bg-color: #2a2a2a;
+  --md-default-fg-color: var(--qrdx-gray-900);
+  --md-default-bg-color: var(--qrdx-white);
 
-  --md-primary-fg-color: #1a1a1a;
-  --md-accent-fg-color: var(--cyan);
-  --md-accent-fg-color--transparent: #4a4a4a;
+  --md-primary-fg-color: var(--qrdx-black);
+  --md-accent-fg-color: var(--qrdx-gray-900);
+  --md-accent-fg-color--transparent: var(--qrdx-gray-200);
 
-  --md-typeset-a-color: var(--cyan);
+  --md-typeset-a-color: var(--qrdx-black);
 
-  --md-footer-fg-color: var(--heather);
-  --md-footer-fg-color--light: var(--heather);
-  --md-footer-bg-color: #1a1a1a;
-  --md-footer-bg-color--dark: #1a1a1a;
+  --md-footer-fg-color: var(--qrdx-gray-700);
+  --md-footer-fg-color--light: var(--qrdx-gray-600);
+  --md-footer-bg-color: var(--qrdx-gray-100);
+  --md-footer-bg-color--dark: var(--qrdx-gray-200);
 
-  /** Branded code snippets**/
-  --md-code-fg-color: #363732;
-  /** Code highlighting color shades **/
+  /** Branded code snippets - Monochrome **/
+  --md-code-fg-color: var(--qrdx-gray-900);
+  --md-code-bg-color: var(--qrdx-gray-100);
+  /** Code highlighting color shades - Grayscale **/
   /* Numbers */
-  --md-code-hl-number-color: #4ca09f;
+  --md-code-hl-number-color: var(--qrdx-gray-700);
   /* Python function names */
-  --md-code-hl-function-color: #363732;
+  --md-code-hl-function-color: var(--qrdx-black);
   /* JavaScript booleans, Python variable names */
-  --md-code-hl-name-color: var(--electric-violet);
+  --md-code-hl-name-color: var(--qrdx-gray-800);
   /* Strings */
-  --md-code-hl-string-color: #d33262;
+  --md-code-hl-string-color: var(--qrdx-gray-600);
   /* Python print */
-  --md-code-hl-constant-color: #070e8b;
+  --md-code-hl-constant-color: var(--qrdx-gray-900);
   /* Imports, const, let, var, async, await, function, etc. */
-  --md-code-hl-keyword-color: #070e8b;
+  --md-code-hl-keyword-color: var(--qrdx-black);
   /* Comments */
-  --md-code-hl-comment-color: #00000060;
+  --md-code-hl-comment-color: var(--qrdx-gray-400);
 
   /** Branded Mermaid Flowchart Diagrams **/
   --md-mermaid-font-family: var(--md-text-font-family), sans-serif;
-  --md-mermaid-edge-color: var(--md-code-fg-color);
-  --md-mermaid-node-bg-color: var(--md-accent-fg-color--transparent);
-  --md-mermaid-node-fg-color: var(--md-accent-fg-color);
-  --md-mermaid-label-bg-color: var(--md-default-bg-color);
-  --md-mermaid-label-fg-color: var(--md-code-fg-color);
+  --md-mermaid-edge-color: var(--qrdx-black);
+  --md-mermaid-node-bg-color: var(--qrdx-gray-100);
+  --md-mermaid-node-fg-color: var(--qrdx-black);
+  --md-mermaid-label-bg-color: var(--qrdx-white);
+  --md-mermaid-label-fg-color: var(--qrdx-black);
 
   /** Branded Mermaid Sequence Diagrams **/
   --md-mermaid-sequence-actor-bg-color: var(--md-mermaid-label-bg-color);
   --md-mermaid-sequence-actor-fg-color: var(--md-mermaid-label-fg-color);
   --md-mermaid-sequence-actor-border-color: var(--md-mermaid-node-fg-color);
-  --md-mermaid-sequence-actor-line-color: var(--md-default-fg-color--lighter);
+  --md-mermaid-sequence-actor-line-color: var(--qrdx-gray-300);
   --md-mermaid-sequence-actorman-bg-color: var(--md-mermaid-label-bg-color);
   --md-mermaid-sequence-actorman-line-color: var(--md-mermaid-node-fg-color);
   --md-mermaid-sequence-box-bg-color: var(--md-mermaid-node-bg-color);
@@ -84,56 +98,55 @@
   --md-mermaid-sequence-note-fg-color: var(--md-mermaid-edge-color);
   --md-mermaid-sequence-note-border-color: var(--md-mermaid-label-fg-color);
   --md-mermaid-sequence-number-bg-color: var(--md-mermaid-node-fg-color);
-  --md-mermaid-sequence-number-fg-color: var(--md-accent-bg-color);
+  --md-mermaid-sequence-number-fg-color: var(--qrdx-white);
 
   /*custom code admonition colors*/
-
-  --md-code-admo-border-color: #5ee20c;
-  --md-code-admo-title-bg: #64dd171a;
+  --md-code-admo-border-color: var(--qrdx-black);
+  --md-code-admo-title-bg: var(--qrdx-gray-100);
 }
 
-/* Dark mode theme */
+/* Dark mode theme - Inverted Black & White */
 [data-md-color-scheme='slate'] {
-  --md-default-fg-color: #c6cfdb;
-  --md-default-bg-color: #0a0a0a;
+  --md-default-fg-color: var(--qrdx-gray-100);
+  --md-default-bg-color: var(--qrdx-black);
 
-  --md-primary-fg-color: #1a1a1a;
-  --md-accent-fg-color: var(--cyan);
-  --md-accent-fg-color--transparent: #3a3a3a;
+  --md-primary-fg-color: var(--qrdx-white);
+  --md-accent-fg-color: var(--qrdx-gray-200);
+  --md-accent-fg-color--transparent: var(--qrdx-gray-800);
 
-  --md-typeset-a-color: var(--cyan);
+  --md-typeset-a-color: var(--qrdx-white);
 
-  --md-footer-fg-color: #c6cfdb;
-  --md-footer-fg-color--light: #c6cfdb;
-  --md-footer-bg-color: #1a1a1a;
-  --md-footer-bg-color--dark: #1a1a1a;
+  --md-footer-fg-color: var(--qrdx-gray-300);
+  --md-footer-fg-color--light: var(--qrdx-gray-400);
+  --md-footer-bg-color: var(--qrdx-gray-900);
+  --md-footer-bg-color--dark: var(--qrdx-black);
 
-  /** Dark mode code snippets **/
-  --md-code-fg-color: #e0e0e0;
-  --md-code-bg-color: #2a2a2a;
-  /** Code highlighting color shades for dark mode **/
+  /** Dark mode code snippets - Monochrome **/
+  --md-code-fg-color: var(--qrdx-gray-100);
+  --md-code-bg-color: var(--qrdx-gray-900);
+  /** Code highlighting color shades for dark mode - Grayscale **/
   /* Numbers */
-  --md-code-hl-number-color: #7dd3fc;
+  --md-code-hl-number-color: var(--qrdx-gray-300);
   /* Python function names */
-  --md-code-hl-function-color: #e0e0e0;
+  --md-code-hl-function-color: var(--qrdx-white);
   /* JavaScript booleans, Python variable names */
-  --md-code-hl-name-color: #c084fc;
+  --md-code-hl-name-color: var(--qrdx-gray-200);
   /* Strings */
-  --md-code-hl-string-color: #fca5a5;
+  --md-code-hl-string-color: var(--qrdx-gray-400);
   /* Python print */
-  --md-code-hl-constant-color: #93c5fd;
+  --md-code-hl-constant-color: var(--qrdx-gray-100);
   /* Imports, const, let, var, async, await, function, etc. */
-  --md-code-hl-keyword-color: #93c5fd;
+  --md-code-hl-keyword-color: var(--qrdx-white);
   /* Comments */
-  --md-code-hl-comment-color: #6b7280;
+  --md-code-hl-comment-color: var(--qrdx-gray-600);
 
   /** Dark mode Mermaid Flowchart Diagrams **/
   --md-mermaid-font-family: var(--md-text-font-family), sans-serif;
-  --md-mermaid-edge-color: var(--md-code-fg-color);
-  --md-mermaid-node-bg-color: #3a3a3a;
-  --md-mermaid-node-fg-color: var(--md-accent-fg-color);
-  --md-mermaid-label-bg-color: var(--md-default-bg-color);
-  --md-mermaid-label-fg-color: var(--md-code-fg-color);
+  --md-mermaid-edge-color: var(--qrdx-white);
+  --md-mermaid-node-bg-color: var(--qrdx-gray-800);
+  --md-mermaid-node-fg-color: var(--qrdx-white);
+  --md-mermaid-label-bg-color: var(--qrdx-black);
+  --md-mermaid-label-fg-color: var(--qrdx-gray-100);
 
   /** Dark mode Mermaid Sequence Diagrams **/
   --md-mermaid-sequence-actor-bg-color: var(--md-mermaid-label-bg-color);
@@ -1449,36 +1462,39 @@ details.interface > summary::before {
 
 /** Button styling **/
 .md-typeset .md-button {
-  background-color: #00d4ff;
-  color: #1a1a1a;
+  background-color: var(--qrdx-white);
+  color: var(--qrdx-black);
   font-family: 'Unbounded';
   font-size: 14px;
   letter-spacing: 0.02em;
-  font-weight: 400;
+  font-weight: 600;
   text-transform: uppercase;
   padding: 22px;
   line-height: 17.36px;
   border-radius: 12px;
-  border: 1px solid #00d4ff;
+  border: 2px solid var(--qrdx-white);
+  transition: all 0.3s ease;
 }
 
 .md-typeset .md-button:hover {
-  background-color: #007acc;
-  color: var(--white);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+  background-color: var(--qrdx-black);
+  color: var(--qrdx-white);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .md-typeset .md-button.secondary {
-  background-color: #2a2a2a;
-  color: #00d4ff;
-  border: 1px solid #00d4ff;
+  background-color: transparent;
+  color: var(--qrdx-white);
+  border: 2px solid var(--qrdx-white);
 }
 
 .md-typeset .md-button.secondary:hover {
-  background-color: #00d4ff;
-  color: #1a1a1a;
-  border: 1px solid #00d4ff;
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+  background-color: var(--qrdx-white);
+  color: var(--qrdx-black);
+  border: 2px solid var(--qrdx-white);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 /** Back to top button styling **/

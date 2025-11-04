@@ -1,13 +1,16 @@
 {% extends "base.html" %}
 
 {% block announce %}
-<div class="announcement-bar">
-  <span class="announcement-text">
-    Join our newly formed telegram 👉
-  </span>
-  <a class="announcement-link" href="https://t.me/qrdx_telegram" target="_blank" rel="noopener noreferrer">
-    Join Here
-  </a>
+<div class="announcement-bar" id="announcement-bar">
+  <div class="announcement-bar__content">
+    <span class="announcement-bar__text">
+      Join our newly formed telegram 👉
+      <a class="announcement-bar__link" href="https://t.me/qrdx_telegram" target="_blank" rel="noopener noreferrer">
+        Join Here
+      </a>
+    </span>
+  </div>
+  <button class="announcement-bar__close" id="close-announcement" aria-label="Close announcement">×</button>
 </div>
 {{ super() }}
 {% endblock %}
@@ -16,6 +19,44 @@
 	{{ super() }}
   <link rel="stylesheet" href="{{ 'assets/stylesheets/main.css' | url }}">
   <link rel="stylesheet" href="{{ 'assets/stylesheets/sponsors.css' | url }}">
+  <style>
+    /* QRDX Black & White Theme Variables */
+    :root {
+      --qrdx-primary: #000000;
+      --qrdx-secondary: #ffffff;
+      --qrdx-accent: #ffffff;
+    }
+    
+    /* Ensure consistent font rendering */
+    body {
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Black & White Theme Enhancements */
+    .md-header {
+      background-color: var(--qrdx-primary);
+      color: var(--qrdx-secondary);
+    }
+    
+    [data-md-color-scheme="slate"] .md-header {
+      background-color: var(--qrdx-primary);
+      color: var(--qrdx-secondary);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Footer branding */
+    .md-footer-meta__inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .md-copyright__highlight {
+      font-weight: 600;
+    }
+  </style>
 {% endblock %}
 
 {% block fonts %}

@@ -3,6 +3,43 @@ site_name: QRDX Documentation
 site_url: https://docs.qrdx.org
 site_author: QRDX Authors
 copyright: Copyright &copy; 2025 QRDX
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - getting-started/introduction.md
+    - getting-started/quick-start.md
+    - getting-started/create-wallet.md
+    - getting-started/funding.md
+    - getting-started/first-trade.md
+  - User Guides:
+    - user-guides/trading.md
+    - user-guides/liquidity.md
+    - user-guides/staking.md
+    - user-guides/governance.md
+    - user-guides/bridge.md
+  - Core Concepts:
+    - core/quantum-computing.md
+    - core/post-quantum-crypto.md
+    - core/qrdx-chain.md
+    - core/qrdx-protocol.md
+    - core/asset-shielding.md
+  - Protocol Reference:
+    - protocol/architecture.md
+    - protocol/qrc20.md
+    - protocol/bridge-protocol.md
+    - protocol/consensus.md
+    - protocol/security.md
+  - Developer Docs:
+    - dev/api-reference.md
+    - dev/smart-contracts.md
+    - dev/sdk.md
+    - dev/integration-guide.md
+  - Security:
+    - security/quantum-resistance.md
+    - security/audits.md
+    - security/best-practices.md
+    - security/bug-bounty.md
 extra_javascript:
   - js/announcement-bar.js
   - js/MessageBox.js

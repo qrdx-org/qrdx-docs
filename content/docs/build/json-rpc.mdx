@@ -1,0 +1,90 @@
+---
+title: JSON-RPC
+description: Ethereum-compatible methods plus QRDX's namespaces, with a playground for each.
+icon: Braces
+---
+
+`POST /rpc` with a JSON-RPC 2.0 body, one request per call (batches are not accepted).
+
+<Tabs items={['curl', 'JavaScript', 'Python']}>
+<Tab value="curl">
+```bash
+curl -s https://test.qrdx.org/rpc \
+  -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'
+```
+</Tab>
+<Tab value="JavaScript">
+```js
+async function rpc(method, ...params) {
+  const res = await fetch('https://test.qrdx.org/rpc', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  })
+  const body = await res.json()
+  if (body.error) throw new Error(`${body.error.code}: ${body.error.message}`)
+  return body.result
+}
+
+const height = parseInt(await rpc('eth_blockNumber'), 16)
+```
+</Tab>
+<Tab value="Python">
+```python
+import httpx
+
+def rpc(method, *params):
+    r = httpx.post("https://test.qrdx.org/rpc",
+                   json={"jsonrpc": "2.0", "id": 1, "method": method, "params": list(params)})
+    body = r.json()
+    if "error" in body:
+        raise RuntimeError(body["error"])
+    return body["result"]
+
+height = int(rpc("eth_blockNumber"), 16)
+```
+</Tab>
+</Tabs>
+
+## Namespaces
+
+| Namespace | For |
+| --- | --- |
+| `eth_*` | Ethereum-compatible: blocks, balances, calls, logs, filters, raw transactions |
+| `qrdx_*` | account ids, address info, intrinsic gas |
+| `exchange_*` | tokens, NFTs, pools, spot books, quotes; signing payloads, submission, receipts |
+| `perp_*` | perps markets, books, accounts, vault, events |
+| `market_*` | one shape for every market: tickers, books, trades, candles |
+| `tx_*` | the transaction index |
+| `net_*`, `web3_*` | network and client |
+
+The [method reference](/docs/reference/json-rpc) lists all of them.
+
+## Ethereum compatibility
+
+Standard tools (ethers, viem, web3.py) work for reads and classic transactions. Differences:
+
+- `eth_getBalance`, `eth_getTransactionCount` and `eth_getCode` also accept `0xPQ…` addresses, resolved to the account id.
+- Only legacy and type-`0x51` raw transactions are accepted; send EIP-1559 fees as a legacy `gasPrice`.
+- Native tokens are ERC-20s at their addresses, so `eth_call` to `balanceOf` works.
+
+<RpcPlayground method="eth_getBalance" params={["0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc", "latest"]} note="Balances are hex wei (1 QRDX = 10¹⁸ wei). A 0xPQ address resolves to its account id." />
+
+## QRDX reads
+
+<RpcPlayground method="qrdx_getAddressInfo" params={["0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc"]} />
+
+<RpcPlayground method="qrdx_getIntrinsicGas" params={["pq", "0x", false]} note="The floor gas a transaction must supply: envelope (legacy or pq), calldata, and whether it creates a contract. Compare pq with legacy: the post-quantum envelope pays for verifying and carrying a 5.3 KB key and signature." />
+
+## Exchange reads
+
+<RpcPlayground method="exchange_getPools" params={[]} />
+
+<RpcPlayground method="exchange_getNonce" params={["0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc"]} />
+
+## Perps reads
+
+<RpcPlayground method="perp_getMarket" params={["BTC-USD-PERP"]} />
+
+<RpcPlayground method="perp_getAccount" params={["0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc"]} />

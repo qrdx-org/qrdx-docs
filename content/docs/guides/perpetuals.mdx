@@ -1,0 +1,68 @@
+---
+title: Perpetuals
+description: Deposit collateral, choose leverage, trade, and understand funding and liquidation.
+icon: TrendingUp
+---
+
+A perpetual future tracks an asset's price with no expiry. You can go long or short with leverage. QRDX perps are matched on an on-chain order book: every trade has a buyer and a seller, so profits are paid by the other side's losses, never minted.
+
+Markets are quoted in USD: `BTC-USD-PERP`, `ETH-USD-PERP` and others, priced against an oracle that validators vote from public exchanges.
+
+<Callout title="Collateral">
+  Perps margin is held as collateral in the clearinghouse. On **testnet** the collateral is native **QRDX**. On mainnet it will be a USD stablecoin, as on Hyperliquid. Profit and loss are computed in the market's quote unit (USD) and settled in collateral units.
+</Callout>
+
+## 1. Deposit collateral
+
+On [trade.qrdx.org/perps](https://trade.qrdx.org/perps), choose **Deposit** and an amount. The deposit moves it from your wallet into the clearinghouse. **Withdraw** moves free collateral back, up to what your open positions do not need as margin.
+
+## 2. Choose leverage and margin mode
+
+Leverage is set per market (up to the market's maximum, 20× by default):
+
+- **Cross** (default): one collateral balance backs all your cross positions. A profit in one market supports a loss in another.
+- **Isolated**: the position has its own margin, moved out of your cross collateral. If it is liquidated, only that margin is at risk.
+
+## 3. Place an order
+
+There are only limit orders. A **market** order is a limit order at an aggressive price with *immediate-or-cancel*: whatever does not fill at once is cancelled. **Reduce-only** orders can only shrink a position and need no margin.
+
+An order is accepted only if your account could carry the resulting position at initial margin (size × price ÷ leverage). Resting orders reserve their margin.
+
+## 4. Watch the position
+
+Your position shows its size, entry price, **mark price**, unrealized PnL, margin and an **estimated liquidation price**: the mark at which the position falls to maintenance margin, holding your other positions at their current marks.
+
+## Prices
+
+| Price | What it is | Used for |
+| --- | --- | --- |
+| Trade | the order book's fill price | entry, exit, realized PnL |
+| Oracle | the stake-weighted median of the prices validators vote (a majority of stake must vote) | funding, the mark |
+| Mark | a median of the oracle plus a smoothed book premium, the book's own prices, and a smoothed book median, held within ±5 % of the oracle | margin, liquidation, unrealized PnL |
+
+Liquidations use the mark, not the last trade, so one large trade or a spoofed order on a thin book cannot liquidate everyone on the other side.
+
+## Funding
+
+Every hour, longs and shorts pay each other so the contract price tracks the oracle. When the book trades above the oracle, longs pay shorts; below it, shorts pay longs. The rate is the average premium over the hour plus a small interest term, capped at 4 % per hour. Payments sum to exactly zero.
+
+## Liquidation
+
+If your equity falls below **maintenance margin** (half the initial margin at the market's maximum leverage):
+
+1. Your resting orders in that scope are cancelled and your positions are closed on the book, never below the price that would leave you with negative equity. Whatever margin remains is yours.
+2. If the book cannot take them, the **backstop vault** takes the positions over at the mark price, with the margin that backed them.
+3. If the vault cannot cover a loss, **auto-deleveraging** closes the most profitable, most leveraged opposite positions to make up the difference.
+
+## The backstop vault
+
+Anyone can deposit free collateral into the vault for shares at its net asset value. The vault earns all perps trading fees and the margin left on the positions it takes over, and carries their risk. Withdrawals redeem shares at NAV after a lockup (4 days by default).
+
+## Oracle staleness
+
+If a market's oracle price has not updated for 5 minutes, it accepts only reduce-only orders until it does. Liquidations keep running.
+
+[The perpetuals engine](/docs/concepts/perpetuals) has the full model.
+
+<CodeRunner example="perps" />

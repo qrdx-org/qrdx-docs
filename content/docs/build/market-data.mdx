@@ -1,0 +1,43 @@
+---
+title: Market data
+description: Tickers, order books, trades and candles, in one shape for every spot pair and perps market.
+icon: ChartCandlestick
+---
+
+Every market answers the same calls in the same shape. A **market** is a spot pair `base:quote` (token addresses, a token's symbol if it is unique, or `QRDX`; either order; `/` also works) or a perps id like `BTC-USD-PERP`. Prices are quote per base; amounts are in the base. Everything is recorded from blocks as they commit, by block time, so every node serves the same data.
+
+| REST | JSON-RPC | |
+| --- | --- | --- |
+| `GET /get_markets?kind=spot\|perp` | `market_getMarkets(kind)` | every market's ticker |
+| `GET /get_ticker?market=` | `market_getTicker(market)` | best bid and ask, mid, last, 24-hour open, high, low, change, volume, trades |
+| `GET /get_orderbook?market=&depth=&level=2\|3` | `market_getOrderBook(market, depth, level)` | level 2: price levels with running totals; level 3: every order |
+| `GET /get_trades?market=&limit=&since=` | `market_getTrades(market, limit, since)` | recent trades, oldest first |
+| `GET /get_candles?market=&interval=&limit=&end=` | `market_getCandles(market, interval, limit, end)` | OHLCV: `1m 5m 15m 1h 4h 1d` |
+
+<CodeRunner example="markets" />
+
+## Order books
+
+<CodeRunner example="order-book" />
+
+Level 2 gives each price level's `amount`, running `total` (base) and `notional_total` (quote), and order count, plus `best_bid`, `best_ask`, `spread`, `spread_bps`, `mid`, `last_price` and the `block_height` the book reflects. A spot pair's book also lists its pools (`amm`). Level 3 lists every resting order (id, owner, remaining) in time priority.
+
+## Trades
+
+Each trade has a sequence number (`seq`), `price`, `amount`, `quote_amount`, the taker's `side`, the `venue` (`clob`, `amm` or `perp`), `maker`, `taker`, `pool_id` and `tx_hash`. Pass `since` (a `seq`) to get only newer trades; `last_seq` is the newest. Or subscribe to `trades:<market>` on a [stream](/docs/build/streams).
+
+<RpcPlayground method="market_getTrades" params={["0x4227d3846511a16656b521361c10faf6358f0708:0xe13ef577f2d8c6cb55e49c70e6ed48f64d0fc106", 5]} />
+
+## Candles
+
+<CodeRunner example="candles" />
+
+Only intervals with trades appear; fill gaps with the previous close if you chart them.
+
+## Limits
+
+Nodes keep the newest 1,000 trades and 1,500 candles per interval per market, rebuilt from the chain after a restart. For a longer history, record the stream yourself.
+
+## Pair orientation and USD
+
+The node names a spot pair in sorted order, which is not always how people read it (USDC/WQRDX rather than WQRDX/USDC). The [trade API](/docs/build/trade-api) orients pairs by quote preference, inverts prices to match, and adds USD reference prices.

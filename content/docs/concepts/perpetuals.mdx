@@ -1,0 +1,56 @@
+---
+title: The perpetuals engine
+description: A zero-sum clearinghouse with on-chain order books, validator-voted oracle prices, funding, liquidations and a backstop vault.
+icon: TrendingUp
+---
+
+QRDX perps are modelled on Hyperliquid. Every trade is a fill on an order book between a buyer and a seller, so positions change by equal and opposite amounts and, in every market, the sum of all position sizes is zero. Profits are paid by losses; nothing is minted.
+
+## The clearinghouse
+
+All perps collateral sits in one protocol account (`0xPERP…`). It moves only on deposit (trader → clearinghouse) and withdrawal (clearinghouse → trader). Trading, realized PnL, fees, funding and liquidations move value **between internal records**, never in or out. Three invariants hold after every block:
+
+1. No perps operation changes the total of all real balances.
+2. In every market, the sum of signed position sizes is zero.
+3. The clearinghouse's balance equals all collateral records minus Σ size × entry price: it holds exactly what every account is worth.
+
+**Collateral** is configured per network: on testnet it is native QRDX; mainnet will settle in a bridged USD stablecoin. Markets are quoted in USD (`BTC-USD-PERP`), so prices, PnL and funding are in USD units, which validators can observe on any exchange.
+
+## Prices
+
+| Price | Definition |
+| --- | --- |
+| **Oracle** | The stake-weighted median of validators' price votes no older than 60 seconds of block time, used only if those votes carry a strict majority of stake. A minority cannot set the price; within a majority, the median ignores outliers. |
+| **Mark** | The median of: the oracle plus a 150-second moving average of (book mid − oracle); the median of best bid, best ask and last trade; and a 30-second moving average of that book median. Held within ±5 % of the oracle. |
+| **Impact bid / ask** | The average price to sell or buy 1,000 of notional on the book, for the funding premium. |
+
+Margin, liquidation and unrealized PnL use the **mark**, so one large trade or a spoofed order on a thin book cannot liquidate the other side. The moving averages advance every block, even quiet ones.
+
+## Margin
+
+- Initial margin = |size| × price ÷ leverage. Maintenance margin = half the initial margin at the market's maximum leverage.
+- **Cross**: one collateral record backs every cross position; equity = collateral + Σ unrealized PnL at mark.
+- **Isolated**: the position has its own margin, moved in from cross collateral as it grows and released as it shrinks.
+- An order is accepted only if the resulting position fits at initial margin; resting orders reserve margin; reduce-only orders need none. Withdrawals are limited to collateral not needed as margin.
+
+## Liquidation
+
+Each block, after the marks move, every account below maintenance margin is handled in order:
+
+1. **Book first.** Resting orders are cancelled and positions closed with reduce-only, immediate-or-cancel orders limited to the **bankruptcy price**, so a book fill can never create bad debt. Leftover margin stays with the trader.
+2. **Backstop.** Still below ⅔ of maintenance, or the book could not take it: the vault takes the positions over at mark with the margin that backed them.
+3. **Auto-deleveraging.** If the vault cannot cover a deficit, opposite positions are closed in order of profitability × leverage, at prices that return the bankrupt account to zero.
+
+## Funding
+
+Every block samples the premium of the impact prices over the oracle. At each hour of block time, the rate is the average premium plus a clamped interest term (0.01 % ± 0.05 %), capped at 4 % per hour, and each position pays size × oracle × rate: longs to shorts when positive. Payments sum to exactly zero. Funding runs before liquidations in the same block.
+
+## The vault
+
+The vault is a margin account anyone can deposit into for shares at net asset value (collateral plus unrealized PnL at mark). It receives all trading fees and takes over liquidated positions. Withdrawals redeem at NAV after a lockup (4 days of block time by default).
+
+## Staleness
+
+A market whose oracle has not updated for 300 seconds refuses orders that add exposure; reduce-only orders and liquidations continue.
+
+<CodeRunner example="perps" />

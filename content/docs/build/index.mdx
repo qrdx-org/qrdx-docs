@@ -1,0 +1,56 @@
+---
+title: Build on QRDX
+description: How to read the chain, sign transactions and integrate the wallet, with examples you can run here.
+icon: CodeXml
+---
+
+A QRDX node speaks three protocols on one host, and they always agree because they read through the same views:
+
+| | Use it for | Testnet |
+| --- | --- | --- |
+| **JSON-RPC** | Ethereum-compatible calls, and every QRDX read and write | `POST https://test.qrdx.org/rpc` |
+| **REST** | the same data over plain `GET`s, easy from any language | `https://test.qrdx.org/get_…` |
+| **Streams** | live blocks, books, trades, tickers and accounts | `wss://test.qrdx.org/ws`, `/stream` (SSE) |
+
+Above the node:
+
+- **QRDX Wallet** signs for users: [wallet integration](/docs/build/wallet-integration) and [QRDX Connect](/docs/build/qrdx-connect).
+- **The trade API** (`trade.qrdx.org/api/v1-test`) adds pair orientation, USD prices, account summaries and PnL: [trade API](/docs/build/trade-api).
+- **Profiles** (`trade.qrdx.org/api/profiles`): verified names and images: [profiles](/docs/build/profiles).
+
+## The examples on these pages run
+
+Every code block with a **Run** button calls the network chosen in its header, from your browser: testnet by default, or a node on your machine. Edit the code and run it again; **⌘/Ctrl + Enter** runs too.
+
+JavaScript examples run in a sandbox (an iframe that cannot reach this page, its storage or its cookies) with these helpers in scope:
+
+| Helper | Does |
+| --- | --- |
+| `rpc(method, ...params)` | JSON-RPC; returns `result`, throws on an RPC error |
+| `rest(path, query?)` | a node REST `GET`; returns `result` |
+| `trade(path)` | the trade API for the chosen network |
+| `pq.keygen(seed?)` | an ML-DSA-65 key pair with its `address` and `accountId` |
+| `pq.sign(message, secretKey, { raw? })`, `pq.verify(message, signature, publicKey, { raw? })` | QRDX-prefixed message signatures, or raw bytes (hex) with `raw: true` |
+| `pq.address(publicKey)`, `pq.accountId(address)` | address and account-id derivation |
+| `hash.keccak256(x)`, `hash.blake2b256(x)` | hashes of text or `0x` hex |
+| `network` | `{ node, rpc, ws, trade, explorer }` |
+| `sleep(ms)` | a pause |
+
+`fetch`, `WebSocket` and `console.table` work as usual. Keys made here live only in the sandbox for that run.
+
+<CodeRunner example="chain-status" />
+
+## Where to start
+
+<Cards>
+  <Card title="Read the chain" href="/docs/build/json-rpc" description="JSON-RPC namespaces, with playgrounds for each." />
+  <Card title="Market data" href="/docs/build/market-data" description="Tickers, books, trades and candles for any market." />
+  <Card title="Keys and signing" href="/docs/build/keys-and-signing" description="Post-quantum keys, addresses and message signatures." />
+  <Card title="Exchange transactions" href="/docs/build/exchange-transactions" description="Build, sign and submit orders, swaps and token operations." />
+  <Card title="Streams" href="/docs/build/streams" description="Live data over WebSocket or SSE." />
+  <Card title="Wallet integration" href="/docs/build/wallet-integration" description="Connect a dApp to QRDX Wallet." />
+</Cards>
+
+## Libraries
+
+There is no official SDK yet. The examples use plain `fetch` and [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum) for ML-DSA-65, the same library QRDX Wallet uses; any FIPS 204 implementation (liboqs, for example) produces compatible signatures.

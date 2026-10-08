@@ -1,0 +1,87 @@
+---
+title: Profiles
+description: Signed public profiles for accounts and tokens, and the API to read and publish them.
+icon: BadgeCheck
+---
+
+Owners of QRDX addresses can publish a name, image, bio and links; token creators can publish an image, description and links for their token. The profile service verifies the signature (and, for a token, that the signer is its creator) before storing anything. QRDX Explorer, QRDX Trade and QRDX Wallet show them.
+
+**A profile is a claim, not verification.** It proves only that the key's holder said it. Names are not unique.
+
+Base URL: `https://trade.qrdx.org/api/profiles/v1/{network}` (`testnet`, later `mainnet`). CORS open.
+
+## Reading
+
+| Request | Response |
+| --- | --- |
+| `GET /accounts/{address}` | a profile, or `404` |
+| `GET /accounts?ids=a,b,…` | `{ profiles: { <lower-case address>: profile } }`, up to 100 |
+| `GET /tokens` | every token profile |
+| `GET /tokens?ids=…`, `GET /tokens/{address}` | as for accounts |
+| `GET /{accounts\|tokens}/{address}/proof` | the signed message, signature and public key, for anyone to check |
+| `GET /image/{account\|token}/{address}?v={issuedAt}` | the profile image |
+
+```json
+{ "kind": "account", "address": "0xpq23f4…", "signer": "0xPQ23F4…",
+  "profile": { "name": "Satoshi Testnet", "x": "qrdx_org", "website": "https://qrdx.org/" },
+  "imageUrl": "https://trade.qrdx.org/api/profiles/v1/testnet/image/account/0xpq23f4…?v=1791389905",
+  "issuedAt": 1791389905, "updatedAt": 1791389905 }
+```
+
+Always show `imageUrl`, never the owner's original URL: the service fetches the image itself (PNG, JPEG, GIF, WebP or AVIF, up to 2 MB, no SVG) and serves it sandboxed, so visitors never contact the owner's host.
+
+<RestPlayground api="profiles" path="/tokens" note="Every token profile on the chosen network." />
+
+## Publishing
+
+A profile is published by POSTing a signed claim to `/accounts` or `/tokens`:
+
+```json
+{ "message": "<the claim text>", "signature": "<hex>", "publicKey": "<hex, for 0xPQ signers>" }
+```
+
+The **message** is readable text followed by the claim as one line of JSON:
+
+```text
+QRDX public profile
+
+Publish this profile for my account 0xPQ23F4… on QRDX testnet. Anyone can see it. Signing sends no transaction and costs nothing.
+
+Account: 0xPQ23F4…
+Name: Satoshi Testnet
+X: qrdx_org
+Issued: 2026-10-07T16:02:11.000Z
+
+{"v":1,"network":"testnet","kind":"account","subject":"0xPQ23F4…","signer":"0xPQ23F4…","profile":{"name":"Satoshi Testnet","x":"qrdx_org"},"issuedAt":1791389905}
+```
+
+The service parses the JSON, rebuilds the whole message from it and accepts only an exact match, so the text a wallet shows can never differ from the data stored. Then:
+
+| Signer | Signs with | The service checks |
+| --- | --- | --- |
+| `0xPQ…` | `qrdx_signPQMessage(message, address)` | ML-DSA-65 over the prefixed message, and that the public key derives to the signer |
+| `0x…` | `personal_sign(message, address)` | EIP-191, recovering the signer |
+
+and requires that an account profile is signed by the account itself, a token profile by the token's creator (read from the node), `issuedAt` within the last 15 minutes, and `issuedAt` newer than what is stored. Removals (`"profile": null`) are kept, so an old signed claim can never be replayed over a newer one.
+
+| Status | When |
+| --- | --- |
+| `400` | malformed, expired, or a field breaks the rules below |
+| `401` | the signature does not verify, or is not the signer's |
+| `403` | the signer is not the token's creator |
+| `409` | a newer profile is already stored |
+
+### Fields
+
+All optional, at least one. Clients and the service normalise them the same way before signing.
+
+| Field | Rule |
+| --- | --- |
+| `name` | accounts only; up to 32 characters; must contain a letter or digit; must not start with `0x` |
+| `image` | an `https` URL on a public host name |
+| `description` | up to 280 characters |
+| `website` | an `http(s)` URL |
+| `x`, `telegram`, `github` | handles (`@name` or a profile URL is accepted and reduced to the handle) |
+| `discord` | an invite code (`discord.gg/<code>` is accepted) |
+
+The easiest way to publish is the explorer: [claim your address](/docs/guides/explorer#claim-your-address).

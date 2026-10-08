@@ -1,0 +1,9 @@
+{
+  "icon": "BookMarked",
+  "pages": [
+    "json-rpc",
+    "rest",
+    "operations",
+    "errors"
+  ]
+}

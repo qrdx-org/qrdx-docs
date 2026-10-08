@@ -1,4 +1,7 @@
-__pycache__
-*.test.yml
-site
-ref
+node_modules
+.next
+out
+.source
+*.tsbuildinfo
+next-env.d.ts
+.env*.local

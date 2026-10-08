@@ -1,0 +1,8 @@
+{
+  "icon": "Rocket",
+  "pages": [
+    "quickstart",
+    "networks",
+    "glossary"
+  ]
+}

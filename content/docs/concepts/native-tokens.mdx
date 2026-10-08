@@ -1,0 +1,53 @@
+---
+title: Native tokens and NFTs
+description: Tokens as consensus data, their authorities and extensions, and how the EVM sees them.
+icon: Coins
+---
+
+Every fungible token on QRDX is a **native token**: a registry entry plus balances in the consensus token ledger. There is no token contract to deploy or audit; like an SPL mint on Solana or a HIP-1 token on Hyperliquid, a token is data and authorities. Pools, order books and perps collateral all move native tokens.
+
+<CodeRunner example="tokens" />
+
+## A token
+
+| Field | Meaning |
+| --- | --- |
+| `token_address` | `0x` + 40 hex, from the deploy: blake2b-160 of `"<sender>:<nonce>:<symbol>"`. Known before the block includes it. |
+| `name`, `symbol` | 1–64 and 1–16 characters. **Symbols are not unique**: identify tokens by address. |
+| `decimals` | 0–18, for display. The ledger counts every token in units of 10⁻¹⁸. |
+| `total_supply` | minted − burned; always equal to the sum of all balances |
+| `max_supply` | optional cap on minting |
+| `mint_authority` | may mint. None: the supply is fixed forever. |
+| `freeze_authority` | may freeze and thaw accounts. None: no account can ever be frozen. |
+| `creator`, `created_height` | who deployed it, and when |
+| `extensions` | what it was deployed with (below) |
+
+Authorities can be any address form, and can be handed over or renounced; renouncing is permanent.
+
+**Freezing.** A frozen account cannot move its balance of the token by any path (transfer, burn, swap, order, liquidity, perps deposit), but can still receive. Funds already committed elsewhere, such as a resting order's escrow, are not touched.
+
+## Extensions
+
+Like Solana's Token-2022, a token opts into extensions when it is deployed:
+
+| Extension | Behaviour |
+| --- | --- |
+| Metadata | a URI and up to 16 key/value fields, editable by a metadata authority |
+| Transfer fee | withholds `amount × bps / 10000` (capped) from every holder-to-holder transfer, collectable by a withdraw authority; a new rate applies 100 blocks later |
+| Non-transferable | soulbound: minted and burned, never moved |
+| Default-frozen | every account starts frozen until thawed (for permissioned assets) |
+| Permanent delegate | may transfer or burn anyone's balance without an allowance (an issuer's clawback) |
+| Pausable | the pause authority can stop every transfer, mint and burn |
+| Default operators | ERC-777 operators for every holder, until a holder revokes one |
+
+Tokens with a transfer fee or that are non-transferable cannot be pooled or traded on a book: spot settlement must be exact.
+
+## In the EVM
+
+Every native token is also an **ERC-20 and ERC-777** at its address, through a precompile over the same ledger: `balanceOf`, `transfer`, `approve`, `transferFrom`, the standard events, ERC-777's `send` and operators, and ERC-1046's `tokenURI`. There is one ledger and one set of allowances, so an `approve` from Solidity is the allowance a native `TOKEN_TRANSFER_FROM` spends. A web3 wallet adds the token by address; contracts hold and move native tokens like any ERC-20.
+
+## NFTs
+
+NFTs are native too. A **collection** has a name, symbol, metadata URI, optional size cap, royalty information (ERC-2981), an update authority and a mint authority. Each NFT has a supply of one, a token id, an owner and its own URI. Only the mint authority mints, so every member of a collection is genuine. In the EVM every collection is an **ERC-721**, including `safeTransferFrom` to contracts.
+
+[Exchange operations](/docs/reference/operations#native-tokens) lists every token and NFT operation.

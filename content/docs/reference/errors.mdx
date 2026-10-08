@@ -1,0 +1,55 @@
+---
+title: Errors
+description: JSON-RPC error codes, REST errors, wallet provider errors, and why exchange transactions fail.
+icon: TriangleAlert
+---
+
+## JSON-RPC
+
+Errors follow JSON-RPC 2.0: `{"jsonrpc": "2.0", "id": 1, "error": {"code": -32602, "message": "…"}}`.
+
+| Code | Name | Meaning |
+| --- | --- | --- |
+| `-32700` | Parse error | The body is not valid JSON. |
+| `-32600` | Invalid request | Not a JSON-RPC 2.0 request object. |
+| `-32601` | Method not found | No such method, or its namespace is not enabled on this node. |
+| `-32602` | Invalid params | Wrong number or type of parameters. |
+| `-32603` | Internal error | The node failed while answering. |
+| `-32000` | Server error | A generic server-side failure. |
+| `-32001` | Resource not found | e.g. an unknown perps market or pool. |
+| `-32002` | Resource unavailable | The data is not available yet (still syncing, index catching up). |
+| `-32003` | Transaction rejected | Submission refused before execution; the message gives the reason. |
+| `-32004` | Method not supported | Known, but not supported in this configuration. |
+| `-32005` | Limit exceeded | A rate or size limit. |
+| `-32015` | Execution error | An EVM call reverted (`eth_call`, `eth_estimateGas`). |
+| `-32099` | Action not allowed | The node refuses the action. |
+
+The node's JSON-RPC endpoint does not accept batched requests: send one request per call.
+
+## REST
+
+Every endpoint answers `{"ok": true, "result": …}` or `{"ok": false, "error": "…"}`. HTTP status codes follow the error: `400` for bad parameters, `404` for unknown objects, `429` when you are rate-limited.
+
+## Submitting exchange transactions
+
+A submission is either refused at **admission** (nothing happens, the nonce is not used) or **executed** in a block (the nonce is used and gas is paid, even if the operation fails).
+
+| Refused at admission (`-32003`) | Why |
+| --- | --- |
+| `invalid signature` | The signature does not verify over the signing bytes with `public_key`, or the key does not derive to `sender`. |
+| `nonce too low: …`, or outside the nonce window | Use `exchange_getNonce`. Operations the node has queued but no block has included still hold their nonces. |
+| under-priced | `gas_price` is below the minimum `exchange_gasPrice` returns. |
+| unaffordable gas | The sender needs QRDX for `gas_limit × gas_price`, reserved while it runs. |
+
+Executed but failed operations come back in the receipt as `"success": false` with an `error`, for example a swap whose output is below `min_amount_out`, an order the account cannot afford, a margin check, a frozen account, or a paused token. Nothing but the fee changes.
+
+## Wallet provider (EIP-1193)
+
+| Code | Meaning |
+| --- | --- |
+| `4001` | The user rejected the request or closed the approval. |
+| `4100` | Not authorized: the site is not connected, or that account is not shared with it. |
+| `4200` | Method not supported (`eth_sign` is disabled on purpose). |
+| `4900` | The wallet is unavailable: reload the page, or open the wallet on the phone. |
+| `4902` | Unknown chain id. |
+| `-32602` | Invalid parameters. |

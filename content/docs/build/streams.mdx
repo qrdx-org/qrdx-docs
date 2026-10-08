@@ -1,0 +1,41 @@
+---
+title: Streams
+description: Live blocks, books, trades, tickers and accounts over WebSocket or Server-Sent Events.
+icon: Radio
+---
+
+A node with streaming enabled (testnet has it) pushes events as blocks commit. Connect, subscribe to channels, and every event arrives as JSON.
+
+- **WebSocket**: `wss://test.qrdx.org/ws`. Send `{"op": "subscribe" | "unsubscribe" | "set", "channels": [...]}`; the node replies `{"type": "subscribed", "channels": [...]}`. Or connect to `/ws?channels=a,b`.
+- **SSE**: `GET https://test.qrdx.org/stream?channels=a,b` (works through proxies and `curl`).
+
+You receive `blocks` by default.
+
+<CodeRunner example="stream" />
+
+## Channels
+
+| Channel | Events |
+| --- | --- |
+| `blocks` | `{"type": "block", "height", "finalized_epoch"}` (the default) |
+| `trades`, `trades:<market>` | every trade as its block commits: book fills, pool swaps, perps fills |
+| `tickers`, `tickers:<market>` | a market's ticker when it changes |
+| `orderbook:<market>` | a market's level-2 book when it changes (any market: spot pair or perps id) |
+| `perp_markets`, `perp_markets:<id>` | a perps market when it changes |
+| `perp_book:<id>` | a perps book when it changes |
+| `perp_events`, `perp_events:<id>` | fills, liquidations and funding as blocks commit |
+| `perp_account:<address>` | an account's perps state, live PnL included |
+| `spot_pools`, `spot_pools:<pool_id>` | a pool when it changes |
+| `spot_book:<tokenA>:<tokenB>` | a spot book when it changes (either order) |
+| `spot_account:<address>` | an address's liquidity positions and resting spot orders |
+| `tokens`, `tokens:<token>` | a token when its supply or authorities change |
+
+Market names are as in [Market data](/docs/build/market-data). Perps, spot and token subscriptions start with a snapshot (`"snapshot": true`). At most 64 channels per connection.
+
+```bash title="SSE with curl"
+curl -N 'https://test.qrdx.org/stream?channels=blocks,trades'
+```
+
+<Callout type="warn" title="Streams are for display">
+  An event can reflect a block mid-way. To confirm what happened to a transaction, read its receipt; after reconnecting, re-read the state you show over REST or RPC.
+</Callout>

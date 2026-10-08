@@ -1,0 +1,44 @@
+---
+title: The explorer and profiles
+description: Find anything on chain, and publish a profile for your address or token.
+icon: Search
+---
+
+[explorer.qrdx.org](https://explorer.qrdx.org) reads the chain from a QRDX node. Search with **⌘K** or **/** for a block number, a transaction hash, an address or a token symbol.
+
+## Pages
+
+| Page | Shows |
+| --- | --- |
+| Home | height, finalized epoch, block times, validators, activity over 24 hours, every market, latest blocks and transactions |
+| Tokens | every native token with its price, 24-hour change and sparkline, market cap, volume and supply |
+| Token (`/address/<token>`) | price chart with volume, supply and authorities, every market and pool it trades in, recent trades |
+| Account (`/address/<address>`) | QRDX and token balances in USD, 30 days of activity, the full transaction history, open orders, liquidity positions, perps, validator details |
+| Transaction | an exchange transaction's parameters, result, fills and every account it touched |
+| Validators, Network | the validator set; node health and streams |
+
+Validator price votes (`ORACLE_VOTE`) are most of testnet's transactions; history tables hide them unless you tick **Validator votes**.
+
+Links from QRDX Trade name the network (`?network=testnet`), so they open on the right chain.
+
+## Claim your address
+
+You can publish a **name, image, bio and links** (website, X, Telegram, Discord, GitHub) for an address you hold. They show on its page and wherever the explorer shows the address.
+
+1. Choose **Link wallet** in the explorer's header: the extension, or your phone by QR code.
+2. Open your address (the wallet menu links to it) and choose **Claim address**.
+3. Fill in what you want public and choose **Sign and publish**. Your wallet signs a readable message with the address's key; nothing is sent on chain and it costs nothing.
+
+A `0xPQ…` address signs with its post-quantum key; a `0x…` address with `personal_sign`. You can edit or remove the profile later the same way.
+
+<Callout type="warn" title="A profile is a claim, not verification">
+  It proves only that whoever holds the address's key wrote it. Names are not unique; the explorer marks them **Claimed by owner**, and curated names come first.
+</Callout>
+
+## Claim a token
+
+If you created a token, open its page and choose **Claim**. You can set its **image, description and links**; a token keeps its on-chain name and symbol. The profile service checks with the node that you are the token's creator. QRDX Trade and QRDX Wallet show the image, and unverified tokens keep their warning marker whatever image they have.
+
+Images are served through the profile service's proxy, so visitors never load them from your server. Use an `https` URL to a PNG, JPEG, GIF, WebP or AVIF of up to 2 MB.
+
+[Profiles](/docs/build/profiles) documents the API.

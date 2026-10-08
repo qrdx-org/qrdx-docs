@@ -1,0 +1,83 @@
+---
+title: Exchange operations
+description: Every operation an exchange transaction can carry, its parameters, who may send it, and its gas.
+icon: ListOrdered
+---
+
+An exchange transaction's `op_type` is the number or the name. Amounts, sizes and prices are decimal strings with at most 18 decimal places. Every operation is all-or-nothing: one that cannot execute is refused whole, changes nothing, and still pays its gas. [Exchange transactions](/docs/build/exchange-transactions) explains the envelope and signing.
+
+**Fee** = gas × `gas_price` (at least 1 gwei = 10⁻⁹ QRDX per gas), paid in QRDX and burned. At the minimum price, 40,000 gas costs 0.00004 QRDX.
+
+## Spot
+
+| Op | # | Params | Gas |
+| --- | --- | --- | --- |
+| `CREATE_POOL` | 1 | `token0`, `token1`, `fee_tier` (100 \| 500 \| 3000 \| 10000), `pool_type` (`STANDARD` \| `SUBSIDIZED`), `initial_price` (token1 per token0 of the sorted pair), `stake_amount` (QRDX) | 150,000 |
+| `ADD_LIQUIDITY` | 2 | `pool_id` (or `token0` + `token1` [+ `fee_tier`]), `tick_lower`, `tick_upper` (multiples of the tick spacing), `amount` (the liquidity L) | 90,000 |
+| `REMOVE_LIQUIDITY` | 3 | `pool_id`, `position_id`, `amount?` (L; default all, `0` collects fees only). Owner only | 60,000 |
+| `SWAP` | 4 | `token_in`, `token_out`, `amount_in`, `min_amount_out`, `deadline?` (block time), `venue?` (`auto` \| `amm` \| `clob`), `pool_id?` | 65,000 |
+| `PLACE_ORDER` | 5 | `pair` (`tokenA:tokenB`, either order), `side` (`buy` \| `sell`), `order_type` (`limit`), `price`, `amount` (base) | 40,000 |
+| `CANCEL_ORDER` | 6 | `order_id`, `pair` | 25,000 |
+| `REMOVE_POOL` | 17 | `pool_id`. The creator, once no position remains; refunds the stake | 60,000 |
+
+Native QRDX is named `QRDX` (any casing) in place of a token address.
+
+## Perpetuals
+
+| Op | # | Params | Gas |
+| --- | --- | --- | --- |
+| `CREATE_MARKET` | 12 | `base_token` (e.g. `BTC`), `max_leverage?` (default 20) | 100,000 |
+| `PERP_DEPOSIT` | 18 | `amount`: collateral from the wallet into the clearinghouse | 40,000 |
+| `PERP_WITHDRAW` | 19 | `amount`: at most `withdrawable` | 40,000 |
+| `PERP_SET_LEVERAGE` | 20 | `market_id`, `leverage`, `mode` (`cross` \| `isolated`) | 20,000 |
+| `PERP_ORDER` | 21 | `market_id`, `side`, `size`, `price`, `reduce_only?`, `tif?` (`gtc` default \| `ioc`) | 60,000 |
+| `PERP_CANCEL` | 22 | `market_id`, `order_id` | 25,000 |
+| `VAULT_DEPOSIT` | 23 | `amount`: free collateral into the backstop vault, for shares | 40,000 |
+| `VAULT_WITHDRAW` | 24 | `shares`, after the lockup | 40,000 |
+| `ORACLE_VOTE` | 25 | `prices` (`{"BTC": "65000.5", …}`). Validators only | 30,000 |
+
+An order's id is the first 16 characters of its transaction hash; the receipt returns it too.
+
+## Native tokens
+
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `TOKEN_DEPLOY` | 13 | `name`, `symbol`, `decimals` (18), `total_supply` (0), `max_supply?`, `mint_authority?`, `freeze_authority?`, and extension parameters | anyone | 120,000 |
+| `TOKEN_TRANSFER` | 14 | `token_address`, `to`, `amount`, `memo?` (≤ 256 bytes) | any holder | 40,000 |
+| `TOKEN_MINT` | 26 | `token_address`, `amount`, `to?` | the mint authority | 40,000 |
+| `TOKEN_BURN` | 27 | `token_address`, `amount`, `from?` | a holder; another's: its operator or the permanent delegate | 30,000 |
+| `TOKEN_APPROVE` | 28 | `token_address`, `spender`, `amount` (0 revokes) | any holder | 25,000 |
+| `TOKEN_TRANSFER_FROM` | 29 | `token_address`, `from`, `to`, `amount`, `memo?` | a spender, an operator, or the permanent delegate | 45,000 |
+| `TOKEN_SET_AUTHORITY` | 30 | `token_address`, `authority` (`mint` \| `freeze` \| `metadata` \| `fee` \| `withdraw` \| `pause` \| `permanent_delegate`), `new_authority` (empty renounces) | the current authority | 25,000 |
+| `TOKEN_FREEZE` / `TOKEN_THAW` | 31 / 32 | `token_address`, `account` | the freeze authority | 25,000 |
+| `TOKEN_UPDATE_METADATA` | 33 | `token_address`, `name?`, `symbol?`, `uri?`, `fields?` | the metadata authority | 30,000 |
+| `TOKEN_SET_TRANSFER_FEE` | 34 | `token_address`, `transfer_fee_bps`, `max_transfer_fee?` (applies 100 blocks later) | the fee authority | 25,000 |
+| `TOKEN_WITHDRAW_FEES` | 35 | `token_address`, `to?` | the withdraw authority | 40,000 |
+| `TOKEN_PAUSE` / `TOKEN_RESUME` | 36 / 37 | `token_address` | the pause authority | 25,000 |
+| `TOKEN_AUTHORIZE_OPERATOR` / `TOKEN_REVOKE_OPERATOR` | 38 / 39 | `token_address`, `operator` | any holder | 25,000 |
+
+## NFTs
+
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `NFT_CREATE_COLLECTION` | 40 | `name`, `symbol`, `uri`, `max_supply?`, `royalty_bps?`, `royalty_recipient?`, `update_authority?`, `mint_authority?`, `non_transferable?` | anyone | 120,000 |
+| `NFT_MINT` | 41 | `collection`, `to?`, `uri?`, `name?`, `token_id?` | the mint authority | 60,000 |
+| `NFT_TRANSFER` | 42 | `collection`, `token_id`, `to`, `from?`, `memo?` | the owner, its approved account or operator | 35,000 |
+| `NFT_BURN` | 43 | `collection`, `token_id` | the same | 25,000 |
+| `NFT_APPROVE` | 44 | `collection`, `token_id`, `spender` (empty clears) | the owner or its operator | 25,000 |
+| `NFT_SET_APPROVAL_FOR_ALL` | 45 | `collection`, `operator`, `approved?` | any owner | 25,000 |
+| `NFT_UPDATE` | 46 | `collection`, `token_id?`, `name?`, `symbol?`, `uri?`, `royalty_bps?`, `royalty_recipient?` | the update authority | 30,000 |
+| `NFT_SET_AUTHORITY` | 47 | `collection`, `authority` (`update` \| `mint`), `new_authority` | the current authority | 25,000 |
+
+## Staking
+
+| Op | # | Params | Gas |
+| --- | --- | --- | --- |
+| `STAKE_DEPOSIT` | 15 | `stake_amount` (at least 100,000 QRDX, debited from the sender), `validator_public_key` (ML-DSA-65, hex) | 150,000 |
+| `STAKE_EXIT` | 16 | — : the sender's validator starts exiting | 80,000 |
+
+[Consensus](/docs/concepts/consensus) explains the validator lifecycle.
+
+## Retired
+
+Operations 7–10 (`OPEN_POSITION`, `CLOSE_POSITION`, `PARTIAL_CLOSE`, `ADD_MARGIN`) belonged to an earlier perpetuals engine and are refused; use `PERP_*`. Operation 11, `UPDATE_ORACLE`, sets an oracle price from a configured reporter on development networks only; public networks configure none, and prices come from validators' `ORACLE_VOTE`s.

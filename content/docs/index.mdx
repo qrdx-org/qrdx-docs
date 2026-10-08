@@ -1,0 +1,47 @@
+---
+title: What is QRDX?
+description: A blockchain whose accounts are secured by post-quantum signatures, with a spot and perpetuals exchange built into the protocol.
+icon: House
+---
+
+QRDX is a proof-of-stake blockchain designed for a world with quantum computers. Its validators sign with **ML-DSA-65**, the NIST post-quantum signature standard (FIPS 204, formerly CRYSTALS-Dilithium), and every account can hold a post-quantum key alongside a classic Ethereum-style one.
+
+The chain also has a **native exchange**: order books, concentrated-liquidity pools and perpetual futures are part of the protocol's state, not contracts deployed on top of it. A trade is a transaction the validators execute and every node agrees on.
+
+<LiveStatus />
+
+<Callout title="Testnet is live; mainnet is not yet">
+  Everything in these docs runs on **QRDX testnet**. Testnet tokens have no value. Mainnet has not launched; see the [roadmap](/docs/roadmap).
+</Callout>
+
+## What you can do today
+
+<Cards>
+  <Card title="QRDX Wallet" href="/docs/guides/wallet" description="Web, iPhone and browser extension. One recovery phrase restores both your classic and post-quantum keys." />
+  <Card title="Trade" href="/docs/guides/spot-trading" description="Limit orders on spot order books, swaps routed to the best venue, and perpetuals with up to 20× leverage." />
+  <Card title="Provide liquidity" href="/docs/guides/liquidity" description="Concentrated-liquidity pools for any pair of native tokens, including native QRDX." />
+  <Card title="Launch a token" href="/docs/guides/launch-a-token" description="A native token is a registry entry, not a contract: create one and open its market in the same block." />
+  <Card title="Explore the chain" href="/docs/guides/explorer" description="Blocks, transactions, tokens and markets, and a public profile for your address." />
+  <Card title="Build" href="/docs/build" description="JSON-RPC, REST and streams, with examples that run against testnet right in the page." />
+</Cards>
+
+## How it fits together
+
+| Piece | What it is | Where |
+| --- | --- | --- |
+| **QRDX node** | The chain: consensus, the EVM, native tokens and the exchange engine. Serves JSON-RPC, REST and WebSocket/SSE streams. | `test.qrdx.org` |
+| **QRDX Wallet** | Holds your keys and signs. Browser extension (Chrome, Firefox), web app, and an iPhone app installed from Safari. | [wallet.qrdx.org](https://wallet.qrdx.org) |
+| **QRDX Trade** | The trading interface for the native exchange, and a public API over it. | [trade.qrdx.org](https://trade.qrdx.org) |
+| **QRDX Explorer** | Blocks, transactions, accounts, tokens and markets. | [explorer.qrdx.org](https://explorer.qrdx.org) |
+
+Every app reads the same node, so they always agree. The wallet signs everything; the apps never hold your keys.
+
+## Why post-quantum
+
+Ethereum and Bitcoin accounts are secured by elliptic-curve signatures. A large enough quantum computer running Shor's algorithm could derive a private key from a public one, and every account whose public key is known (any account that has ever sent a transaction) would be exposed. QRDX's post-quantum accounts are signed with ML-DSA-65, which no known quantum algorithm breaks. [Post-quantum cryptography](/docs/security/post-quantum-cryptography) explains what that protects, and what it does not.
+
+## Try it now
+
+This runs in your browser against testnet. Edit it and run it again.
+
+<CodeRunner example="chain-status" />

@@ -1,0 +1,62 @@
+---
+title: QRDX Wallet
+description: Install the wallet, back it up, understand your two addresses, and connect it to sites.
+icon: Wallet
+---
+
+QRDX Wallet holds your keys and signs everything you do on QRDX. It runs in three places from one codebase, and a recovery phrase moves between them.
+
+| | Browser extension | iPhone app | Web app |
+| --- | --- | --- | --- |
+| Install | Chrome Web Store / Firefox Add-ons, via [wallet.qrdx.org](https://wallet.qrdx.org) | Safari → **Share → Add to Home Screen** | Open [wallet.qrdx.org/wallet](https://wallet.qrdx.org/wallet) |
+| Sites connect by | the injected provider (automatic) | QR code (QRDX Connect) | QR code (QRDX Connect) |
+| Biometric unlock | passkey, where the browser supports it | Face ID / Touch ID (iOS 18+) | passkey, where supported |
+| Stays unlocked | until auto-lock or the browser closes | locks 30 s after you leave the app (adjustable) | locks on reload |
+| Auto-lock default | 15 min | 5 min | 10 min |
+
+<Callout type="warn" title="Install the iPhone app from Safari">
+  Safari deletes the storage of websites you have not visited for seven days. An app added to the home screen is exempt. Whatever you use, your recovery phrase is the real backup.
+</Callout>
+
+## Your recovery phrase
+
+The wallet creates a 12-word BIP-39 phrase. **It restores every account and both keys of each**: the classic secp256k1 key (path `m/44'/60'/0'/0/i`) and the ML-DSA-65 post-quantum key, whose seed is derived from the same phrase. Write it down and keep it offline. Anyone with the phrase controls the wallet.
+
+Exporting the phrase, a private key or a keystore always asks for your password again, and anything you copy is cleared from the clipboard after 60 seconds.
+
+## Two addresses per account
+
+Every account shows two addresses:
+
+- **`0x…`**: the classic address. Ethereum tools understand it, and `eth_sendTransaction` spends from it.
+- **`0xPQ…`**: the post-quantum address. Trading, pools, perps and token operations are signed with its key, and on QRDX it is the address that holds your exchange balances.
+
+They are two separate balances. Send QRDX to the `0xPQ…` address to trade. [Accounts](/docs/concepts/accounts) explains why.
+
+<Callout type="info">
+  An account made from an imported private key gets a post-quantum key derived from that classic key. It works, but it is only as strong as the classic key, and the wallet labels it **classical PQ**. Create accounts from a recovery phrase to get a real post-quantum key.
+</Callout>
+
+## Connecting to a site
+
+Sites ask the wallet to connect; you choose which accounts to share. After that, every signature and transaction opens an approval screen showing:
+
+- the site's real origin (taken from the browser, not from the site),
+- what you are signing, decoded: "Buy 0.5 qBTC at 85,000 qUSDC", "Swap 1,000 qUSDC for at least 0.0117 qBTC",
+- the maximum fee,
+- warnings for unknown tokens, swaps without a minimum output, and token approvals.
+
+**From a phone**, a site shows a QR code. In the wallet choose **Connect to a site** and scan it (or scan with the camera). The connection is end-to-end encrypted through a relay; you approve each request on the phone. Approve only a code you just scanned from your own screen.
+
+## Security in brief
+
+- Keys are encrypted with AES-256-GCM under a data key wrapped by your password (PBKDF2-SHA256, 600,000 iterations) or a passkey.
+- After five wrong passwords, unlocking slows down: 30 s, doubling up to an hour.
+- Before signing, the wallet checks that the node really serves the chain you selected.
+- `eth_sign`, which signs arbitrary hashes, is disabled.
+
+More in [Wallet security](/docs/security/wallet-security).
+
+## What the wallet can do
+
+Send and receive QRDX and tokens, swap, trade spot and perps markets, provide liquidity, stake as a validator, and connect to sites. The **Trade** screen uses the same markets and numbers as [trade.qrdx.org](https://trade.qrdx.org).

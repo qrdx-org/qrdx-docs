@@ -1,0 +1,12 @@
+{
+  "icon": "Lightbulb",
+  "pages": [
+    "post-quantum",
+    "accounts",
+    "transactions-and-fees",
+    "native-tokens",
+    "exchange",
+    "perpetuals",
+    "consensus"
+  ]
+}

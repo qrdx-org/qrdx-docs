@@ -1,0 +1,43 @@
+---
+title: Networks and endpoints
+description: Where the QRDX nodes and services are, and what each one serves.
+icon: Network
+---
+
+<LiveStatus />
+
+## Testnet
+
+| | |
+| --- | --- |
+| Node (REST) | `https://test.qrdx.org` |
+| JSON-RPC | `https://test.qrdx.org/rpc` |
+| Streams | `wss://test.qrdx.org/ws` (WebSocket), `https://test.qrdx.org/stream` (SSE) |
+| Chain ID | `88888` (`0x15b38`), as the node reports it: see the live value above |
+| Native currency | QRDX, 18 decimals |
+| Trade API | `https://trade.qrdx.org/api/v1-test` |
+| Explorer | [explorer.qrdx.org](https://explorer.qrdx.org) |
+
+The node and the trade API allow requests from any origin (`Access-Control-Allow-Origin: *`), so a web page can call them directly. That is how the examples in these docs run.
+
+<Callout type="warn" title="Chain IDs are not final">
+  QRDX chain IDs are not yet registered and may change before mainnet. Read the chain ID from the node (`eth_chainId`) rather than hard-coding it.
+</Callout>
+
+## Mainnet
+
+Mainnet has not launched. Its endpoints will be `https://node.qrdx.org` and `https://rpc.qrdx.org`, with the trade API at `https://trade.qrdx.org/api/v1`. See the [roadmap](/docs/roadmap).
+
+## Services
+
+| Service | Base URL | Docs |
+| --- | --- | --- |
+| Trade API | `https://trade.qrdx.org/api/v1-test` | [Trade API](/docs/build/trade-api) |
+| QRDX Connect relay | `https://trade.qrdx.org/api/relay` | [QRDX Connect](/docs/build/qrdx-connect) |
+| Profiles | `https://trade.qrdx.org/api/profiles` | [Profiles](/docs/build/profiles) |
+
+## Running your own node
+
+The node is open source ([qrdx-org/qrdx-chain](https://github.com/qrdx-org/qrdx-chain)). A node you run serves the same JSON-RPC, REST and streams on port `3007` by default; streams are on when it starts with `QRDX_ENABLE_STREAMING=1`. Every playground in these docs can point at it: pick **Local node** (`http://127.0.0.1:3007`) or **Custom…** in a playground's network menu.
+
+<RpcPlayground method="eth_chainId" />

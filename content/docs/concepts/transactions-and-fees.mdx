@@ -1,0 +1,39 @@
+---
+title: Transactions and fees
+description: The three kinds of transaction, their nonces, and what each costs.
+icon: Receipt
+---
+
+| Kind | Signed with | Carries | Nonce | Submit with |
+| --- | --- | --- | --- | --- |
+| **EVM, legacy** | secp256k1 (`0x` account) | transfers, contract calls and deployments | the account nonce | `eth_sendRawTransaction` |
+| **EVM, type `0x51`** | ML-DSA-65 (post-quantum account) | transfers and contract calls | the account nonce | `eth_sendRawTransaction` |
+| **Exchange** | ML-DSA-65 (post-quantum account) | orders, swaps, pools, perps, native tokens, NFTs, staking | the **exchange nonce** | `exchange_sendTransaction` |
+
+All three execute only when a block includes them. Receipts tell you the outcome.
+
+## EVM transactions
+
+QRDX runs an EVM. It accepts **legacy** (pre-EIP-1559) envelopes and the post-quantum type `0x51`; other typed envelopes are refused. Wallets fold EIP-1559 fee fields into a legacy `gasPrice`.
+
+**Type `0x51`** puts an ML-DSA-65 signature in an EIP-2718 envelope:
+
+```text
+0x51 ‖ rlp([chain_id, nonce, gas_price, gas_limit, to, value, data, public_key, signature])
+signature over keccak256(0x51 ‖ rlp([chain_id, nonce, gas_price, gas_limit, to, value, data]))
+```
+
+There is no sender field: the sender is the account id of the embedded public key, so a transaction can only spend from the account its key controls. Its hash is keccak256 of the raw bytes, as in Ethereum. The intrinsic gas is higher than a classic transaction's because the signature is verified and its bytes are paid for: about **145,000 gas** for a plain transfer (`qrdx_getIntrinsicGas` returns the exact floor).
+
+## Exchange transactions
+
+A JSON object with an operation, parameters, gas, the public key and an ML-DSA-65 signature. [Exchange transactions](/docs/build/exchange-transactions) shows how to build and sign one.
+
+- **Nonce.** Each account has an exchange nonce, separate from its EVM nonce. An executed transaction uses its nonce whether it succeeds or fails; one refused at admission does not.
+- **Gas.** Each operation has a fixed gas cost (20,000–150,000, listed in [Exchange operations](/docs/reference/operations)), priced at `gas_price` wei per gas, at least 1 gwei.
+- **Fee.** Gas × price, paid in QRDX and **burned**, whether the operation succeeds or fails: about 0.00004–0.00015 QRDX at the minimum price.
+- **Any node.** Exchange transactions are gossiped, so the node you submit to does not need to be a validator.
+
+## Finality
+
+A transaction is included when a block containing it is imported, usually within seconds. Blocks are final once their epoch is finalized: two-thirds of the validators' stake has attested to it. [Consensus](/docs/concepts/consensus) has the details.

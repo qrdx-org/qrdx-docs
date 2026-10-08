@@ -1,0 +1,17 @@
+{
+  "icon": "CodeXml",
+  "pages": [
+    "index",
+    "json-rpc",
+    "rest",
+    "streams",
+    "keys-and-signing",
+    "exchange-transactions",
+    "market-data",
+    "transaction-history",
+    "wallet-integration",
+    "qrdx-connect",
+    "trade-api",
+    "profiles"
+  ]
+}

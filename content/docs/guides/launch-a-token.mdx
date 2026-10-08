@@ -1,0 +1,38 @@
+---
+title: Launch a token
+description: Create a native token and open its market in one step.
+icon: Sparkles
+---
+
+A token on QRDX is not a contract. It is a registry entry (name, symbol, supply, authorities) and balances held in consensus, so creating one is a single transaction and there is no code to audit. Every native token is also an ERC-20 inside the EVM.
+
+## On trade.qrdx.org
+
+[Launch](https://trade.qrdx.org/launch) creates a token and a market for it at once:
+
+1. **Name, symbol and supply.** Symbols are not unique; the token is identified by its address, which is fixed before the block includes it.
+2. **How much you keep.** The rest goes on the **launch curve**.
+3. **Launch price and curve.** The curve is a concentrated-liquidity position holding only the new token, from the launch price up to a multiple of it. Buyers swap the quote asset in and walk the price up the range, which behaves like a bonding curve but is an ordinary pool that anyone can trade on, add to or route through.
+4. **Pool cost.** Stake 10,000 QRDX (refunded if the pool is later removed) or burn 5,000 QRDX (the pool is permanent).
+
+The wallet asks you to approve the token, the pool and the curve. They can all land in the same block.
+
+## Authorities
+
+A token has optional authorities. Each can be handed over or renounced; **renouncing is permanent**.
+
+| Authority | Can | If none |
+| --- | --- | --- |
+| Mint | create new supply, up to the max supply if one is set | the supply is fixed forever |
+| Freeze | freeze and thaw accounts' balances of the token | no account can ever be frozen |
+
+A launch on trade.qrdx.org never sets a freeze authority, so nobody can lock a holder's coins. By default it has no mint authority either, so the supply is fixed; you can choose to keep the right to mint (for yourself or another address), and buyers will see that. The explorer shows **Fixed supply**, **Mintable** and **Freezable** on every token page.
+
+## Advanced: extensions
+
+Tokens created with `TOKEN_DEPLOY` directly can opt into extensions when they are created: metadata, transfer fees, non-transferable (soulbound), default-frozen, a permanent delegate, pausing, and ERC-777 operators. [Native tokens](/docs/concepts/native-tokens) lists them. Tokens with a transfer fee or that cannot be transferred cannot be pooled.
+
+## After launch
+
+- The token page on [the explorer](https://explorer.qrdx.org) shows its price, chart, supply, markets and holders' trades.
+- As the creator, you can [claim the token](/docs/guides/explorer#claim-a-token) on the explorer and set its image, description and links. QRDX Trade and the wallet show the image.

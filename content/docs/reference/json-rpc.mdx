@@ -1,0 +1,165 @@
+---
+title: JSON-RPC methods
+description: Every JSON-RPC method a QRDX node serves, generated from the node and checked against testnet.
+icon: Braces
+---
+
+A node serves JSON-RPC 2.0 at `POST /rpc` (testnet: `https://test.qrdx.org/rpc`). This list is generated from the node's source and every method on it answered on testnet. Parameters marked `?` are optional. Amounts and prices are decimal strings.
+
+<Callout type="info">Peer-to-peer methods (`p2p_*`, `dht_*`) are for nodes talking to each other and are not listed. The `bridge_*` and `validator_*` namespaces are not enabled on testnet.</Callout>
+
+## eth
+
+Ethereum-compatible methods. Addresses may be `0x…` or `0xPQ…` (resolved to the account id). Only legacy (pre-EIP-1559) and type-`0x51` raw transactions are accepted.
+
+| Method | Params | |
+| --- | --- | --- |
+| `eth_chainId` | — | Returns the chain ID (EIP-695). |
+| `eth_blockNumber` | — | Returns the number of the most recent block. |
+| `eth_protocolVersion` | — | Returns the current Ethereum protocol version. |
+| `eth_syncing` | — | Returns syncing status. |
+| `eth_accounts` | — | Returns addresses owned by the node. |
+| `eth_gasPrice` | — | Returns the current gas price. |
+| `eth_maxPriorityFeePerGas` | — | Returns the suggested priority fee (EIP-1559). |
+| `eth_feeHistory` | `block_count`, `newest_block?`, `reward_percentiles?` | Returns base-fee-per-gas history (EIP-1559). |
+| `eth_getBlockByNumber` | `block_number`, `include_transactions?` | Returns block by number or tag. |
+| `eth_getBlockByHash` | `block_hash`, `include_transactions?` | Returns block by hash. |
+| `eth_getBlockTransactionCountByHash` | `block_hash` | Returns transaction count in a block by block hash. |
+| `eth_getBlockTransactionCountByNumber` | `block_number` | Returns transaction count in a block by number. |
+| `eth_getUncleCountByBlockHash` | `block_hash` | QRDX uses Proof of Stake — no uncles. |
+| `eth_getUncleCountByBlockNumber` | `block_number` | QRDX uses Proof of Stake — no uncles. |
+| `eth_getTransactionByHash` | `tx_hash` | Returns transaction by hash. |
+| `eth_getTransactionReceipt` | `tx_hash` | Returns the receipt of a transaction by hash. |
+| `eth_getTransactionByBlockHashAndIndex` | `block_hash`, `index` | Returns transaction by block hash and index position. |
+| `eth_getTransactionByBlockNumberAndIndex` | `block_number`, `index` | Returns transaction by block number and index position. |
+| `eth_getTransactionCount` | `address`, `block_number?` | Returns the number of transactions sent from an address (nonce). |
+| `eth_sendRawTransaction` | `raw_tx` | Submit a signed, RLP-encoded transaction. |
+| `eth_sendTransaction` | `transaction` | Send a transaction (requires node to hold keys). |
+| `eth_getBalance` | `address`, `block_number?` | Returns the balance of an address in wei. |
+| `eth_getCode` | `address`, `block_number?` | Returns the bytecode at an address. |
+| `eth_getStorageAt` | `address`, `position`, `block_number?` | Returns the value from a storage position at an address. |
+| `eth_call` | `transaction`, `block_number?` | Execute a read-only contract call (no state changes persisted). |
+| `eth_estimateGas` | `transaction`, `block_number?` | Estimate gas for a transaction. |
+| `eth_getLogs` | `filter_params` | Returns logs matching the given filter. |
+| `eth_newFilter` | `filter_params` | Creates a new log filter for polling via ``eth_getFilterChanges``. |
+| `eth_newBlockFilter` | — | Creates a new block filter. Returns filter ID. |
+| `eth_newPendingTransactionFilter` | — | Creates a pending-transaction filter. Returns filter ID. |
+| `eth_getFilterChanges` | `filter_id` | Returns new events since the last poll for the given filter. |
+| `eth_getFilterLogs` | `filter_id` | Returns all logs matching the filter (not just since last poll). |
+| `eth_uninstallFilter` | `filter_id` | Uninstalls a filter. Returns True if found. |
+| `eth_createAccessList` | `transaction`, `block_number?` | Generate an access list for a transaction (EIP-2930). |
+| `eth_getProof` | `address`, `storage_keys`, `block_number?` | Returns Merkle-Patricia proof for an account (EIP-1186). |
+| `eth_getUncleByBlockHashAndIndex` | `block_hash`, `index` | QRDX uses PoS — no uncles. |
+| `eth_getUncleByBlockNumberAndIndex` | `block_number`, `index` | QRDX uses PoS — no uncles. |
+
+## qrdx
+
+QRDX-specific reads.
+
+| Method | Params | |
+| --- | --- | --- |
+| `qrdx_getAddressInfo` | `address` | Balance, account id and address type for any address form. |
+| `qrdx_getAccountId` | `address` | The 20-byte account id for any address form. |
+| `qrdx_getIntrinsicGas` | `envelope?`, `data?`, `is_create?` | The minimum gas a transaction must supply before execution begins. |
+| `qrdx_getPendingTransactions` | `limit?`, `offset?` | Returns pending transactions from the mempool. |
+| `qrdx_getNetworkInfo` | — | Network statistics. |
+| `qrdx_getPeers` | — | This node's peers. |
+
+## exchange
+
+Native tokens, NFTs, pools, spot order books, and submitting exchange transactions.
+
+| Method | Params | |
+| --- | --- | --- |
+| `exchange_sendTransaction` | `tx`, `propagated?` | Submit a signed exchange transaction (object or JSON string). Returns its hash; it executes when a block includes it. |
+| `exchange_getSigningPayload` | `tx` | The exact bytes to sign for an unsigned exchange transaction, its hash, and the normalized transaction to add `signature` and `public_key` to. |
+| `exchange_getTransactionReceipt` | `tx_hash` | An exchange transaction's result: success, error, gas, fee, and data (fills, order id, position id…). `null` while pending. |
+| `exchange_gasPrice` | — | The minimum exchange gas price, in wei per gas. |
+| `exchange_getNonce` | `address` | The next exchange nonce for an address (committed operations only). |
+| `exchange_getTokenBalance` | `token_address`, `address` | A token balance (decimal string). `token_address` may be `QRDX`. |
+| `exchange_getTokenAccount` | `token_address`, `address` | A holder's balance of a token and whether the token's freeze authority froze it. |
+| `exchange_getTokens` | — | Every native token. |
+| `exchange_getToken` | `token_address` | One native token: supply, decimals, authorities, extensions, creator. |
+| `exchange_getAllowance` | `token_address`, `owner`, `spender` | An allowance an owner gave a spender. |
+| `exchange_getNftCollections` | — | Every NFT collection. |
+| `exchange_getNftCollection` | `collection` | One NFT collection. |
+| `exchange_getNft` | `collection`, `token_id` | One NFT, with its collection's royalties. |
+| `exchange_getNftsOf` | `owner`, `collection?`, `limit?` | An owner's NFTs (either address form). |
+| `exchange_isNftOperator` | `collection`, `owner`, `operator` | Whether an operator may move all of an owner's NFTs in a collection. |
+| `exchange_isTokenOperator` | `token_address`, `holder`, `operator` | Whether an operator (authorized or default) may move a holder's balance of a token. |
+| `exchange_getStateRoot` | — | The exchange state root this node computed for its head. |
+| `exchange_getPools` | `token_a?`, `token_b?` | Pools: all, or a pair's. Price, tick, active liquidity, fee tier, volume, holder address. |
+| `exchange_getPool` | `pool_id`, `twap_window?` | One pool with its initialized ticks and positions; `twap_window` (seconds) adds a time-weighted price. |
+| `exchange_quoteLiquidity` | `pool_id`, `tick_lower`, `tick_upper`, `liquidity?`, `amount0?`, `amount1?` | The liquidity a deposit buys in a range, and the exact amounts it takes. |
+| `exchange_getPositions` | `address` | An address's liquidity positions: range, liquidity, in range, and what removing pays now (principal + fees). |
+| `exchange_quoteSwap` | `token_in`, `token_out`, `amount_in`, `sender?`, `pool_id?`, `venue?` | The exact fill for a swap: venue, amount out, fee, execution price, price impact. |
+| `exchange_getOrderBook` | `pair`, `depth?` | A spot pair's book: price levels, best first, and the escrow address. |
+| `exchange_getOpenOrders` | `address` | An address's resting spot orders, every pair. |
+
+## perp
+
+Perpetuals: markets, books, accounts, the vault and the event feed.
+
+| Method | Params | |
+| --- | --- | --- |
+| `perp_getMarkets` | — | Every perps market: oracle, mark and last price, open interest, best bid and ask, funding. |
+| `perp_getMarket` | `market_id` | One perps market (unknown id: error −32001). |
+| `perp_getOrderBook` | `market_id`, `depth?` | A perps market's book. |
+| `perp_getAccount` | `address` | Collateral, equity, margins, positions (with estimated liquidation price), orders, vault shares. |
+| `perp_getOpenOrders` | `address` | An address's resting perps orders. |
+| `perp_getVault` | — | The backstop vault: NAV, shares, share value, positions, lockup. |
+| `perp_getTrades` | `market_id`, `limit?` | Recent fills in a market, oldest first. |
+| `perp_getEvents` | `market_id?`, `address?`, `types?`, `since?`, `limit?` | The event feed: fills (with realized PnL), liquidations, funding. Filter by market, address, types; page with `since`. |
+
+## market
+
+One shape for every market, spot pair or perps: tickers, books, trades, candles.
+
+| Method | Params | |
+| --- | --- | --- |
+| `market_getMarkets` | `kind?` | Every market's ticker; `kind` is `spot` or `perp`. |
+| `market_getTicker` | `market` | Best bid and ask, last price, 24-hour statistics; pools for a spot pair, mark and funding for perps. |
+| `market_getOrderBook` | `market`, `depth?`, `level?` | Level 2 (price levels with running totals) or level 3 (every order) for any market. |
+| `market_getTrades` | `market`, `limit?`, `since?` | Recent trades, oldest first; `since` (a sequence number) returns only newer ones. |
+| `market_getCandles` | `market`, `interval?`, `limit?`, `end?` | OHLCV candles by block time: `1m 5m 15m 1h 4h 1d`. |
+
+## tx
+
+The transaction index: history per account and the latest transactions.
+
+| Method | Params | |
+| --- | --- | --- |
+| `tx_getHistory` | `address`, `limit?`, `cursor?`, `kinds?` | An account's transactions, newest first, with its roles in each. Page with `cursor`; filter with `kinds`. |
+| `tx_getRecent` | `limit?`, `cursor?`, `kinds?` | The chain's latest transactions, every kind. |
+| `tx_getTransaction` | `tx_hash` | One indexed transaction and every account it touched. |
+
+## net
+
+Network status.
+
+| Method | Params | |
+| --- | --- | --- |
+| `net_version` | — | Returns the network ID. |
+| `net_listening` | — | Returns whether the node is listening for connections. |
+| `net_peerCount` | — | Returns the number of connected peers. |
+
+## web3
+
+Client information and hashing.
+
+| Method | Params | |
+| --- | --- | --- |
+| `web3_clientVersion` | — | Returns the client version string. |
+| `web3_sha3` | `data` | Returns Keccak-256 hash of input. |
+
+## Legacy
+
+Proof-of-work methods kept for compatibility. QRDX is proof of stake; they return placeholders.
+
+`eth_coinbase`, `eth_getWork`, `eth_hashrate`, `eth_mining`, `eth_submitHashrate`, `eth_submitWork`, `qrdx_getBlockReward`, `qrdx_getDifficulty`, `qrdx_getMiningInfo`, `qrdx_submitBlock`
+
+## Try any method
+
+Type a method and its params, then run it. The [JSON-RPC guide](/docs/build/json-rpc) has examples for each namespace.
+
+<RpcPlayground editable method="qrdx_getAddressInfo" params={["0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc"]} />

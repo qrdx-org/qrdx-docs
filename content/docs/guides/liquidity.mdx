@@ -1,0 +1,48 @@
+---
+title: Liquidity pools
+description: Provide liquidity in a price range, earn fees, and create a pool.
+icon: Droplets
+---
+
+QRDX pools are **concentrated-liquidity** pools, with the same mathematics as Uniswap v3: you choose a price range, and your liquidity trades only while the price is inside it. A narrower range earns more of the fees per unit of capital, and stops earning sooner when the price moves out.
+
+## Add liquidity
+
+1. Open [Pools](https://trade.qrdx.org/pools) and pick a pool, or a pair and fee tier.
+2. Choose a range: the lower and upper price. Ranges snap to the pool's tick spacing.
+3. Enter how much of either token to deposit. The site asks the node for an exact quote: the most liquidity those amounts buy, and the exact deposit it takes.
+4. Approve in the wallet. Once a block includes it, the position appears in your [portfolio](/docs/guides/portfolio) with its range, current value and uncollected fees.
+
+A position earns its share of each swap's fee while the price is inside its range: 70 % of the pool fee goes to in-range liquidity providers, 30 % to the protocol.
+
+## Remove liquidity
+
+Removing returns your principal at the current price plus uncollected fees. You can remove all of a position, part of it, or nothing (collect fees only). Only the owner can remove a position.
+
+## Fee tiers
+
+| Tier | Fee | Tick spacing | Typical pairs |
+| --- | --- | --- | --- |
+| 100 | 0.01 % | 1 | stablecoin pairs |
+| 500 | 0.05 % | 10 | correlated assets |
+| 3000 | 0.3 % | 60 | most pairs |
+| 10000 | 1 % | 200 | new or volatile tokens |
+
+## Create a pool
+
+Anyone can create a pool for two native tokens (or a token and native QRDX), at a starting price. Creating one costs QRDX, which keeps the pool list from filling with spam:
+
+| Type | Cost | |
+| --- | --- | --- |
+| Standard | stake 10,000 QRDX | Refunded when you remove the pool, which is possible once every position in it is withdrawn. |
+| Subsidized | burn 5,000 QRDX | Burned for good. The pool is permanent. |
+
+A pool also opens the pair's order book. Tokens with a transfer fee or that cannot be transferred cannot be pooled.
+
+## Concepts
+
+- **Price** in a pool is token1 per token0 of the sorted pair (the lower token address is token0; native QRDX sorts after every address).
+- **Impermanent loss**: as the price moves, a position's mix shifts toward the token that fell. Fees offset this; they do not always cover it.
+- **Out of range**: when the price leaves your range, your position is entirely one token and earns nothing until the price returns.
+
+[The exchange engine](/docs/concepts/exchange) explains how pools and books work together.

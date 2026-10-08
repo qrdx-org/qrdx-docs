@@ -1,0 +1,51 @@
+---
+title: Spot trading
+description: Order books, swaps, how a swap picks its venue, and slippage.
+icon: ArrowLeftRight
+---
+
+Every pair of native tokens, and any token against native QRDX, can trade in two venues at once: an **order book** and one or more **pools**. Both are part of the chain, so a trade is final when a block includes it.
+
+## Markets
+
+[trade.qrdx.org](https://trade.qrdx.org) lists every market with a pool. A market's URL names it: verified assets by name (`/trade/btc/usdc`), anything else by token address. Anyone can create a token with any name, so the site marks unverified tokens and the wallet always shows a token's address next to its symbol.
+
+Native QRDX trades directly; there is no wrapping. Its side of a trade settles in your QRDX balance.
+
+## Limit orders
+
+A limit order rests on the book until it fills or you cancel it. While it rests, its funds are escrowed: a buy holds the quote amount (price × size), a sell holds the base amount. Cancelling refunds the escrow.
+
+1. Pick a market and the **Limit** tab.
+2. Enter a price and a size; the form shows the total and your available balance.
+3. Press **Buy** or **Sell** and approve in the wallet.
+
+The order appears in **Open orders** once a block includes it. Several orders can be placed before the first is included: the wallet tracks the nonces it has submitted.
+
+## Swaps and market orders
+
+A swap spends a fixed amount and receives whatever the best venue pays:
+
+- each of the pair's **pools**, and
+- the **book**, walking the bids when you sell the base asset or the asks when you buy it.
+
+The swap settles entirely with the venue that pays the most. Before you sign, the site asks the node for an exact quote and sets **minimum received** to the quote less your slippage tolerance (0.5 % by default). If the price moves past that before the block, the swap fails and nothing changes, except the small transaction fee.
+
+<Callout type="info" title="Every operation is all-or-nothing">
+  A swap that would receive less than its minimum, an order you cannot afford, or a cancel of someone else's order is refused whole. The chain records the failure; your balances do not change except for the fee.
+</Callout>
+
+## Fees
+
+- **Pool fees** depend on the pool's tier: 0.01 %, 0.05 %, 0.3 % or 1 %. 70 % go to the liquidity providers in range, 30 % to the protocol.
+- **Transaction fees** are paid in QRDX and burned: about 0.00004–0.00015 QRDX per operation, whether it succeeds or fails.
+
+## Charts and data
+
+Prices, candles, trades and 24-hour statistics come from the chain's own fills and pool swaps. Where a token has an outside market, the site also shows its USD **index price** from public exchanges, labelled as reference data. Nothing is generated or padded.
+
+## From code
+
+<CodeRunner example="swap-quote" />
+
+See [Market data](/docs/build/market-data) and [Exchange transactions](/docs/build/exchange-transactions).

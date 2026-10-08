@@ -1,0 +1,50 @@
+---
+title: Wallet security
+description: How QRDX Wallet protects keys, how it treats sites, and where the limits are.
+icon: LockKeyhole
+---
+
+## Keys
+
+- **Classic key**: secp256k1, BIP-39 phrase, BIP-32 path `m/44'/60'/0'/0/i`.
+- **Post-quantum key**: ML-DSA-65. Its 32-byte seed is derived from the BIP-39 seed with HMAC-SHA-512 under a versioned domain tag, so **the recovery phrase restores both keys** of every account.
+
+## The vault
+
+```text
+data key (32 random bytes) ── AES-256-GCM ──▶ every secret
+password ── PBKDF2-SHA256, 600,000 iterations, per-vault salt ──▶ wraps the data key
+passkey  ── WebAuthn PRF ── HKDF-SHA256 ──▶ wraps the data key   (optional, per device)
+```
+
+- Each encrypted record is bound to its slot, so a record moved elsewhere fails to decrypt.
+- Changing the password re-wraps only the data key; nothing is left under the old password.
+- While unlocked, only the data key is held, as a non-extractable WebCrypto key; decrypted key material is wiped after each use (best effort in JavaScript).
+- Exporting the phrase, a private key or a keystore always asks for the password again; copied secrets are cleared from the clipboard after 60 seconds.
+
+## Unlocking
+
+- Five free attempts, then delays of 30 seconds doubling to an hour, kept across restarts.
+- Auto-lock after inactivity (5–15 minutes depending on platform); the iPhone app also locks 30 seconds after you leave it.
+- Biometric unlock uses a passkey's PRF secret, never a stored password; where PRF is unavailable, biometric unlock is off rather than weakened.
+
+## Sites
+
+- A page can only make provider requests; it cannot replace `window.qrdx`.
+- The site's origin comes from the browser, not from the page.
+- Everything involving accounts needs the site to be connected; every signature and transaction opens an approval with the real origin, the decoded request and the maximum fee.
+- `eth_sign` is disabled. Typed data for another chain is refused. A site can have at most three approvals pending.
+- With QRDX Connect, the relay only sees ciphertext, and the wallet checks that the site's claimed origin matches the one the relay saw.
+
+## Network
+
+- Before signing, the wallet checks that the node serves the chain you selected; a mismatch blocks signing until you explicitly trust it.
+- Recipients on QRDX are resolved to their 20-byte account id, so a `0xPQ` address can never be truncated into a wrong one. Protocol accounts (`0xPOOL…`, `0xCLOB…`, `0xPERP…`) are refused as recipients.
+
+## Known limits
+
+- **JavaScript memory**: wiping keys is best effort; a compromised browser or OS can read keys while the wallet is unlocked.
+- **Web storage** in a browser tab can be evicted (Safari, after seven days unused). Install the iPhone app, and keep the recovery phrase.
+- **Weak passwords**: the vault is only as strong as its password against offline guessing.
+- **No hardware wallets**: none supports ML-DSA yet.
+- **Not yet audited**: a third-party audit of the wallet is planned before mainnet.

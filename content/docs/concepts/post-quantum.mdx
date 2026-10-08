@@ -1,0 +1,47 @@
+---
+title: Post-quantum keys
+description: ML-DSA-65 keys, 0xPQ addresses, and what QRDX signs with them.
+icon: KeyRound
+---
+
+QRDX uses **ML-DSA-65** for post-quantum signatures: the Module-Lattice Digital Signature Algorithm at NIST security category 3, standardised in **FIPS 204** (it was called CRYSTALS-Dilithium3 before standardisation). Its security rests on the hardness of lattice problems (Module-LWE and Module-SIS), for which no efficient quantum algorithm is known.
+
+| | ML-DSA-65 | secp256k1 (Ethereum) |
+| --- | --- | --- |
+| Public key | 1,952 bytes | 33 or 65 bytes |
+| Signature | 3,309 bytes | 65 bytes |
+| Recovers the signer from a signature | no: the public key travels with the signature | yes |
+| Broken by Shor's algorithm | no | yes |
+
+## What is signed with it
+
+- **Every block and attestation.** Validators must use ML-DSA-65 keys; classic keys cannot validate.
+- **Every exchange transaction**: orders, swaps, pools, perps and token operations. A classic `0x` key cannot sign one.
+- **Type `0x51` EVM transactions**, which spend from a post-quantum account through the EVM (transfers, contract calls).
+- **Messages** (`qrdx_signPQMessage`), for proving ownership of an address off chain, as the explorer's profiles do.
+
+## Keys from a recovery phrase
+
+ML-DSA key generation is deterministic in a 32-byte seed. QRDX Wallet derives that seed from the BIP-39 recovery phrase (HMAC-SHA-512 under a versioned domain tag), so **one phrase restores both keys** of every account, on any device. The resulting key pair is an ordinary ML-DSA-65 pair: the node cannot tell how it was made, and signatures verify byte for byte under liboqs, the library the node uses.
+
+## The 0xPQ address
+
+An address is `0xPQ` followed by the first 32 bytes of keccak256 of the public key, in hex with a checksum: letters are upper-cased where the matching nibble of keccak256(the lower-case hex) is 8 or more, like EIP-55.
+
+Try it: this creates a key in your browser, derives its address, and asks testnet to confirm the derivation.
+
+<CodeRunner example="pq-keys" />
+
+## Signing messages
+
+A message signature covers `"\x19QRDX PQ Signed Message:\n"`, the message's UTF-8 byte length, and the message, so a signed message can never be replayed as a transaction (the same purpose as Ethereum's EIP-191 prefix). ML-DSA signing is randomised, so signing the same message twice gives two different valid signatures.
+
+<CodeRunner example="pq-sign" />
+
+## Hybrid by design
+
+Each QRDX account also has a classic `0x` key, so Ethereum tooling keeps working: MetaMask can send to any account, contracts see ordinary 20-byte addresses, and `eth_*` methods behave as expected. The post-quantum key is what protects the account's exchange balances and what validators sign with. [Accounts](/docs/concepts/accounts) explains how the two fit into one ledger.
+
+<Callout type="warn" title="What post-quantum does not cover">
+  A classic `0x` account is still secured by secp256k1. Funds there are only as safe as that key. Keep value you want protected from quantum attacks in the `0xPQ…` account. See [Post-quantum cryptography](/docs/security/post-quantum-cryptography).
+</Callout>

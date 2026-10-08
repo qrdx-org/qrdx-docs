@@ -1,0 +1,67 @@
+---
+title: Trade API
+description: "trade.qrdx.org's read-only API: markets oriented by pair, USD prices, accounts and PnL."
+icon: ChartLine
+---
+
+A read-only API over the native exchange. It serves trade.qrdx.org and anyone else: no key, CORS open.
+
+| Network | Base URL |
+| --- | --- |
+| Testnet | `https://trade.qrdx.org/api/v1-test` |
+| Mainnet (not launched) | `https://trade.qrdx.org/api/v1` |
+
+**It does not place orders.** Orders are exchange transactions signed by the trader's key and sent to a node, normally through QRDX Wallet. Use this API for what the node does not do: pair orientation, USD prices, aggregated accounts and PnL.
+
+## Conventions
+
+- **Amounts and prices are decimal strings.** Do not parse them to floats for anything you sign.
+- **Assets in paths** are a verified slug (`btc`, `eth`, `usdc`, `qrdx`, …) or a token address for unverified tokens. A verified token's address redirects (`308`) to its slug.
+- **Pair orientation follows the path**: in `/markets/eth/usdc`, prices are USDC per ETH and sizes are in ETH, whatever the node's sorted order is.
+- Bodies carry `source` (`node`, `indexer`, `coinbase`, `kraken`, `coingecko`) and `asOf` (Unix seconds).
+- Errors: `{ "error": { "code", "message" } }` with `400 bad_request`, `404 not_found`, `404 ambiguous_symbol` (a symbol that is not a verified slug; `candidates` lists matching tokens by address), `502 node_unavailable`.
+
+## Markets
+
+<RestPlayground api="trade" path="/markets" />
+
+| Endpoint | |
+| --- | --- |
+| `GET /markets` | every spot pair with a pool, and every perps market |
+| `GET /markets/{base}/{quote}` | one spot market: last, 24-hour stats, index prices, pools |
+| `GET /markets/{base}/{quote}/orderbook?depth=` | the book, oriented to the path |
+| `GET /markets/{base}/{quote}/trades?limit=` | recent trades |
+| `GET /markets/{base}/{quote}/candles?interval=&limit=` | candles (`1m 5m 15m 1h 4h 1d`) |
+| `GET /perps`, `GET /perps/{base}/{quote}[/orderbook \| /trades \| /candles]` | the same for perps |
+| `GET /pools[?base=&quote=]`, `GET /pools/{poolId}?twap=` | pools |
+| `GET /quote?from=&to=&amount=&sender=&venue=auto` | a swap quote |
+| `GET /quote/liquidity?pool=&tickLower=&tickUpper=&amount0=&amount1=` | a liquidity quote |
+| `GET /assets[?all=1]`, `GET /assets/{asset}` | verified assets, every token, one asset with supply, authorities and its creator's profile |
+| `GET /launches?limit=` | recent token launches |
+| `GET /status` | the network's node: height, latency |
+
+## Prices
+
+<CodeRunner example="trade-api" />
+
+`GET /prices[?assets=btc,qrdx,0x…]` (up to 100) and `GET /prices/{asset}`. Verified assets with an outside market use their **index** price from public exchanges (Coinbase, then Kraken, then CoinGecko). Everything else, including QRDX itself, is priced through the network's pools to an asset that has one (`source: "route"`, with the `route` and `pools` used). An asset with neither is `null`. These are reference prices, labelled as such.
+
+## Accounts and PnL
+
+<RestPlayground api="trade" path="/accounts/0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc/pnl" note="Realized and open PnL from the account's fills: spot on an average-cost basis per market, perps as the clearinghouse realized them. USD at today's prices." />
+
+| Endpoint | |
+| --- | --- |
+| `GET /accounts/{address}[?tokens=0x…,0x…]` | balances (with what is in orders), spot orders oriented to their markets, liquidity positions, the perps account, the exchange nonce |
+| `GET /accounts/{address}/pnl` | totals, a cumulative realized PnL series, and PnL per market |
+| `GET /receipts/{txHash}` | an exchange receipt, `404` while pending |
+
+## The asset object
+
+```json
+{ "segment": "btc", "slug": "btc", "symbol": "BTC", "name": "Bitcoin", "verified": true,
+  "address": "0x0e35…5658", "onChainSymbol": "qBTC", "decimals": 8, "color": "#f7931a",
+  "listed": true, "image": null }
+```
+
+`segment` is what goes in a URL. An unverified token has `slug: null` and its address as `segment`. `image` is the image its creator published ([profiles](/docs/build/profiles)), or `null`.

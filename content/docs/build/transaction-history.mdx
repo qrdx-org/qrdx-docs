@@ -1,0 +1,34 @@
+---
+title: Transaction history
+description: What an account did and received, and the chain's latest transactions, from the node's index.
+icon: ListClock
+---
+
+Every node indexes each canonical block's transactions under **every account they touched**, with that account's roles: legacy transfers, exchange operations (token moves, swaps, orders, pools, perps, NFTs, staking) and EVM transactions with the token transfers they emitted. An account's `0x` and `0xPQ` forms share one history.
+
+| REST | JSON-RPC | |
+| --- | --- | --- |
+| `GET /get_address_history?address=&limit=50&cursor=&kinds=` | `tx_getHistory(address, limit, cursor, kinds)` | an account's transactions, newest first |
+| `GET /get_latest_transactions?limit=&cursor=&kinds=` | `tx_getRecent(limit, cursor, kinds)` | the chain's latest transactions |
+| `GET /get_indexed_transaction?tx_hash=` | `tx_getTransaction(tx_hash)` | one transaction and every account it touched |
+
+<CodeRunner example="history" />
+
+## Fields
+
+Each entry has `tx_hash`, `kind` (`transfer`, `exchange`, `evm`, `genesis`, `coinbase`), `op` (e.g. `SWAP`), `block_height`, `timestamp`, `sender`, `target`, `asset`, `amount`, `status` (`success`, `failed`, `unknown`), `fee` (QRDX), `error`, `detail` (parameters and what it did) and the account's `roles`:
+
+| Role | Meaning |
+| --- | --- |
+| `sender` | it sent the transaction |
+| `to`, `from` | the recipient or source of a transfer |
+| `spender`, `operator`, `account` | an allowance spender, an operator, an affected account |
+| `maker` | its resting order was filled by someone else's transaction |
+| `token_from`, `token_to` | a token transfer's source or recipient |
+| `created` | the transaction created it (a token, a pool) |
+
+## Paging
+
+Pass the previous page's `next_cursor` as `cursor`. `kinds` filters (comma-separated). `indexed_height` says how far the index has got; it follows the chain within about a second of each block and follows reorganisations.
+
+<RestPlayground path="/get_latest_transactions" query={{ limit: "5", kinds: "exchange" }} note="On testnet most exchange transactions are validators' ORACLE_VOTEs." />

@@ -1,0 +1,106 @@
+---
+title: REST endpoints
+description: Every public REST endpoint a QRDX node serves.
+icon: Globe
+---
+
+The node's REST API is on the same host as JSON-RPC (testnet: `https://test.qrdx.org`). Responses are `{"ok": true, "result": …}` or `{"ok": false, "error": "…"}`; the operations endpoints answer plain text or JSON. Parameters are query parameters on `GET` and a JSON body on `POST`; `?` marks optional ones.
+
+<Callout type="warn" title="Rate limits">Public nodes limit requests per IP and endpoint. `get_blocks` is also cost-limited: each call costs `offset / 100 + limit / 50` against a budget of 1,000 per IP per hour, so deep or wide block ranges are expensive. Prefer the [transaction index](/docs/build/transaction-history) and [streams](/docs/build/streams).</Callout>
+
+## Chain
+
+| Endpoint | Params | |
+| --- | --- | --- |
+| `GET /get_status` | — | Height, last block hash and node id. Not cost-limited. |
+| `GET /get_block` | `block`, `full_transactions?` | One block by height or hash. |
+| `GET /get_blocks` | `offset?`, `limit?` | Blocks from `offset`, ascending. Cost-limited per IP (see below). |
+| `GET /get_transaction` | `tx_hash` | A transaction by hash. |
+| `GET /get_address_info` | `address`, `transactions_count_limit?`, `page?`, `show_pending?` | Balance and recent transactions of an address (either form). |
+| `GET /get_validators` | `status?` | Return the PoS validator set from the validators table. |
+| `GET /get_attestations` | `slot?`, `epoch?`, `validator_address?`, `block_hash?`, `limit?`, `offset?` | Get attestations by slot, epoch, validator, or block |
+| `GET /get_pending_transactions` | — | The mempool. |
+| `GET /get_unified_state_root` | — | Return the unified block state root (Whitepaper §3.6): a BLAKE3-512 commitment over all state domains — UTXO set, account/EVM state, exchange state, and the QRC-20 token ledger. |
+| `GET /get_randao_mix` | — | The accumulated RANDAO mix (observe-first) — a deterministic fold of every canonical block's proposer reveal (see qrdx.validator.randao). All honest nodes on the same chain MUST report an identical mix; this endpoint is how that cross-node convergence is confi |
+
+## Transaction index
+
+| Endpoint | Params | |
+| --- | --- | --- |
+| `GET /get_address_history` | `address`, `limit?`, `cursor?`, `kinds?` | Everything an address did or received — legacy transfers, exchange operations (token moves, swaps, orders and the fills of its resting orders, pools, perps, staking), EVM transactions and the token transfers they emitted — newest first, with each transaction's |
+| `GET /get_latest_transactions` | `limit?`, `cursor?`, `kinds?` | The chain's latest transactions of every kind, newest first (paged like `/get_address_history`). |
+| `GET /get_indexed_transaction` | `tx_hash` | One indexed transaction of any kind — its block, status, fee, summary and every account it touched with their roles. |
+
+## Exchange transactions
+
+| Endpoint | Params | |
+| --- | --- | --- |
+| `POST /exchange_signing_payload` | JSON body | The exact bytes an exchange transaction's sender signs, for these fields (`op_type` as a number or name, `sender`, `nonce`, `params`, optional `gas_limit` / `gas_price`), and the hash the transaction will have. Sign `signing_bytes` with the sende |
+| `POST /submit_exchange_tx` | JSON body | Submit a signed exchange transaction (spot, perps, staking, oracle votes — every exchange op). |
+| `GET /get_exchange_receipt` | `tx_hash` | The executed result of an exchange transaction — success or failure, its error, and the operation's data (an order's id and fills, a deposit's collateral, …). `null` while it is pending (or after it ages out of this node's journal). |
+| `GET /get_exchange_nonce` | `address` | The next exchange nonce for `address` (exchange transactions have their own sequence). |
+| `GET /get_exchange_state_root` | — | Return this node's current exchange state root (Whitepaper §3.6 BLAKE3-512). |
+
+## Tokens and NFTs
+
+| Endpoint | Params | |
+| --- | --- | --- |
+| `GET /get_tokens` | — | Every native token: name, symbol, decimals, supply, max supply, mint and freeze authorities. |
+| `GET /get_token` | `token_address` | One native token's registry entry. |
+| `GET /get_token_balance` | `token_address`, `address` | Read-only: one holder's balance in the consensus QRC-20 token ledger. Any address form, including protocol holders (the perps clearinghouse, pool reserves, order-book escrow). |
+| `GET /get_token_allowance` | `token_address`, `owner`, `spender` | How much of `owner`'s tokens `spender` may move with TOKEN_TRANSFER_FROM. |
+| `GET /get_nft_collections` | — | Every native NFT collection: metadata, size, royalties, authorities. |
+| `GET /get_nft_collection` | `collection` | One NFT collection. |
+| `GET /get_nft` | `collection`, `token_id` | One NFT: its owner, metadata uri, name, approval, and its collection's royalties. |
+| `GET /get_nfts` | `owner`, `collection?`, `limit?` | An owner's NFTs (its 0x or 0xPQ address), every collection or one. |
+
+## Spot
+
+| Endpoint | Params | |
+| --- | --- | --- |
+| `GET /get_pools` | `token_a?`, `token_b?` | Spot AMM pools — all of them, or one pair's: price, tick, active liquidity, fee tier, protocol fees, volume, and the holder address that owns the pool's reserves. |
+| `GET /get_pool` | `pool_id`, `twap_window?` | One AMM pool with its initialized ticks and positions. `twap_window` (seconds of block time) adds the pool's time-weighted price over that window. |
+| `GET /get_swap_quote` | `token_in`, `token_out`, `amount_in`, `sender?`, `pool_id?`, `venue?` | The exact fill a SWAP would get right now — the router's own quote across the pair's pools and its order book (`venue` auto \| amm \| clob, `pool_id` pins a pool). Pass `sender` so the quote stops where self-trade prevention would. Set the swap's ``min_amo |
+| `GET /get_liquidity_quote` | `pool_id`, `tick_lower`, `tick_upper`, `liquidity?`, `amount0?`, `amount1?` | What adding liquidity to a range costs: pass `liquidity` for its exact deposit, or `amount0` / `amount1` for the most liquidity they buy at the current price. Ticks are multiples of the pool's tick spacing; the result's `liquidity` is ADD_LIQUIDITY's ` |
+| `GET /get_lp_positions` | `address` | An address's liquidity positions, every pool: range, liquidity, whether it is in range, and what removing it would pay right now (principal + uncollected fees). |
+| `GET /get_spot_orderbook` | `pair`, `depth?` | A spot pair's order book (`tokenA:tokenB` by address, either order): aggregated price levels in quote per base, best first. |
+| `GET /get_spot_orders` | `address` | An address's resting spot orders, every pair. |
+
+## Perpetuals
+
+| Endpoint | Params | |
+| --- | --- | --- |
+| `GET /get_perp_markets` | — | Every perps market: prices (oracle, mark, last), open interest, top of book, funding. |
+| `GET /get_perp_market` | `market_id` | One perps market: oracle, mark and last trade prices, open interest, the top of the book, and funding — the rate last paid, when, when the next is due, and the premium accumulated since. Identical on every node that has imported t |
+| `GET /get_perp_orderbook` | `market_id`, `depth?` | A market's order book: aggregated price levels, best first. |
+| `GET /get_perp_account` | `address` | One perps account: exchange nonce, collateral, withdrawable, equity and margin, positions (with unrealized PnL and an estimated liquidation price), open orders, vault shares — plus the clearinghouse holder and the backstop vault.  |
+| `GET /get_perp_orders` | `address` | An address's resting perp orders, every market. |
+| `GET /get_perp_vault` | — | The backstop vault: NAV, shares, share value, the positions it carries, the lockup. |
+| `GET /get_perp_trades` | `market_id`, `limit?` | A market's recent fills, oldest first (liquidation fills included, and flagged). |
+| `GET /get_perp_events` | `market_id?`, `address?`, `types?`, `since?`, `limit?` | The perps event feed — fills, liquidations, funding settlements — filtered by market, address (a fill's buyer or seller, a liquidation's owner), comma-separated `types`, and `since` (a sequence number: return only newer events). `last_seq` is the newest  |
+
+## Market data
+
+| Endpoint | Params | |
+| --- | --- | --- |
+| `GET /get_markets` | `kind?` | Every market's ticker — spot pairs (order book and/or AMM pools) and perps markets: top of book, last price, 24h open/high/low/change/volume. `kind` = spot \| perp. |
+| `GET /get_ticker` | `market` | One market's ticker. `market` is a spot pair `base:quote` (addresses, unique symbols or QRDX, either order) or a perps market id. |
+| `GET /get_orderbook` | `market`, `depth?`, `level?` | A market's order book: level 2 = price levels with running base/quote totals, level 3 = every resting order per level in time priority; plus best bid/ask, spread (and in bps), mid, last price, the block height it reflects and, for a spot pair, its AMM pools. |
+| `GET /get_trades` | `market`, `limit?`, `since?` | A market's recent trades, oldest first — order-book fills, AMM swaps, perps fills — with the taker's side and the transaction. `since` (a trade `seq`) returns only newer ones. |
+| `GET /get_candles` | `market`, `interval?`, `limit?`, `end?` | OHLCV candles by block time (1m 5m 15m 1h 4h 1d). |
+
+## Operations
+
+| Endpoint | Params | |
+| --- | --- | --- |
+| `GET /healthz` | — | Liveness probe — the process is up and serving. Always 200. |
+| `GET /readyz` | — | Readiness probe — the node can serve chain data (DB reachable, a tip exists). 503 if not, so a load balancer / orchestrator drains this node until it is caught up. |
+| `GET /metrics` | — | Prometheus text exposition — chain height, finality, peers, stream subscribers, etc. |
+
+## Streams
+
+`GET /ws` (WebSocket) and `GET /stream?channels=` (Server-Sent Events). See [Streams](/docs/build/streams).
+
+## Try one
+
+<RestPlayground path="/get_ticker" query={{ market: "0x4227d3846511a16656b521361c10faf6358f0708:0xe13ef577f2d8c6cb55e49c70e6ed48f64d0fc106" }} />

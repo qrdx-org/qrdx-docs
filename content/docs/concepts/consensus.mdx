@@ -1,0 +1,46 @@
+---
+title: Consensus and validators
+description: "Post-quantum proof of stake: slots, epochs, finality, staking and slashing."
+icon: ShieldCheck
+---
+
+QRDX is a proof-of-stake chain in which **every validator signs with ML-DSA-65**. Classic keys cannot propose or attest.
+
+| Parameter | Value |
+| --- | --- |
+| Slot | 2 seconds; one proposer per slot, chosen by stake with RANDAO randomness. A slot may pass without a block. |
+| Epoch | 32 slots |
+| Finality | an epoch is finalized when attestations carry two-thirds of the active stake |
+| Minimum stake | 100,000 QRDX |
+| Maximum active validators | 150 |
+| Activation delay | 4 epochs after the deposit |
+
+<RestPlayground path="/get_validators" />
+
+## Becoming a validator
+
+1. Run a node with a post-quantum validator key.
+2. Hold at least 100,000 QRDX in that key's account.
+3. Send a `STAKE_DEPOSIT` exchange transaction with `stake_amount` and `validator_public_key`. The stake is **debited**, so it is genuinely at risk; the validator is registered as pending and activated a few epochs later by every node alike.
+4. To leave, send `STAKE_EXIT`. The stake is refunded at the exit epoch once it is finalized.
+
+A validator whose stake falls below 50,000 QRDX is ejected. There is no delegation: each validator stakes its own QRDX.
+
+## Slashing
+
+A slashed validator never reaches the exited state, so it forfeits its stake.
+
+| Offence | Penalty |
+| --- | --- |
+| Double signing (two blocks for one slot) | 50 % |
+| Surround vote | 50 % |
+| Invalid attestation | 30 % |
+| Extended downtime | 5 % |
+
+A whistleblower receives 1/512 of the slashed amount, and the proposer that includes the evidence 1/32.
+
+## Validators and the oracle
+
+Validators also vote external USD prices for the perps markets (`ORACLE_VOTE`). Each proposer attaches its own vote to the blocks it proposes, from a median of public exchange prices. Votes are most of the transactions on testnet; the explorer hides them by default.
+
+<LiveStatus />

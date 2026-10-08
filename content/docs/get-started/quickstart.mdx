@@ -1,0 +1,75 @@
+---
+title: Quickstart
+description: Install QRDX Wallet, connect it to testnet, and place your first order on the native exchange.
+icon: Rocket
+---
+
+This takes about five minutes. Everything happens on **testnet**, where tokens have no value.
+
+<Steps>
+<Step>
+
+### Install QRDX Wallet
+
+Pick the platform you will trade from. All three share the same accounts, and one recovery phrase restores them anywhere.
+
+| Platform | How |
+| --- | --- |
+| Browser extension (Chrome, Firefox) | Install from [wallet.qrdx.org](https://wallet.qrdx.org). Sites find it automatically. |
+| iPhone | Open [wallet.qrdx.org](https://wallet.qrdx.org) in Safari, then **Share → Add to Home Screen**. Unlocks with Face ID on iOS 18 and later. |
+| Any browser | Use the web app at [wallet.qrdx.org](https://wallet.qrdx.org/wallet). It locks when you reload. |
+
+</Step>
+<Step>
+
+### Create a wallet and write down the phrase
+
+Choose **Create a new wallet**, set a password, and write down the 12-word recovery phrase. The phrase is the only backup: it restores both of your keys, the classic one and the post-quantum one.
+
+Each account has two addresses:
+
+- a **`0x…` address** for classic (Ethereum-style) transactions, and
+- a **`0xPQ…` address**, signed with your post-quantum key. Trading, tokens and pools use this one.
+
+[Accounts](/docs/concepts/accounts) explains how the two relate.
+
+</Step>
+<Step>
+
+### Switch to testnet
+
+Open the network menu in the wallet and choose **QRDX Testnet**. The trading site follows the wallet's network.
+
+</Step>
+<Step>
+
+### Get testnet QRDX
+
+Exchange operations pay a small fee in QRDX (about 0.0001 QRDX each). There is no public testnet faucet yet; ask in the QRDX community channels for testnet QRDX, and give your `0xPQ…` address.
+
+</Step>
+<Step>
+
+### Connect to QRDX Trade and place an order
+
+Open [trade.qrdx.org](https://trade.qrdx.org), choose **Connect**, and approve in the wallet. With the extension installed, pick **QRDX Wallet extension**; on a phone, pick **QRDX Wallet on your phone** and scan the QR code.
+
+Pick a market, enter a price and size, and press **Buy** or **Sell**. The wallet shows the decoded order ("Buy 10 USDC at 0.0043 WQRDX") before you sign. The order executes when the next block includes it, usually within seconds.
+
+</Step>
+<Step>
+
+### See it on the explorer
+
+Every order, fill and fee is on [explorer.qrdx.org](https://explorer.qrdx.org). Search for your `0xPQ…` address; you can also [claim a public profile](/docs/guides/explorer#claim-your-address) for it.
+
+</Step>
+</Steps>
+
+## What next
+
+<Cards>
+  <Card title="Spot trading" href="/docs/guides/spot-trading" description="Orders, swaps, routing and slippage." />
+  <Card title="Perpetuals" href="/docs/guides/perpetuals" description="Collateral, leverage, funding and liquidation." />
+  <Card title="Build on QRDX" href="/docs/build" description="Read the chain and sign transactions from code." />
+</Cards>

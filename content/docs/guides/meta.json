@@ -1,0 +1,12 @@
+{
+  "icon": "Compass",
+  "pages": [
+    "wallet",
+    "spot-trading",
+    "liquidity",
+    "perpetuals",
+    "launch-a-token",
+    "portfolio",
+    "explorer"
+  ]
+}

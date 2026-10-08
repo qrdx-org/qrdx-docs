@@ -1,0 +1,46 @@
+---
+title: Post-quantum cryptography
+description: What quantum computers threaten, what ML-DSA-65 protects on QRDX, and what it does not.
+icon: Atom
+---
+
+## The threat
+
+Blockchains secure accounts with public-key signatures. Bitcoin and Ethereum use ECDSA over secp256k1, whose security rests on the elliptic-curve discrete logarithm problem.
+
+- **Shor's algorithm**, run on a large fault-tolerant quantum computer, solves discrete logarithms and factors integers in polynomial time. It would let an attacker compute a private key from a public key, and so forge signatures. Every account whose public key is known (in Ethereum, any account that has ever sent a transaction) would be exposed.
+- **Grover's algorithm** speeds up brute-force search quadratically. It roughly halves the security of hash functions and symmetric keys: a 256-bit hash still gives about 128-bit security, which remains sound.
+
+No quantum computer today can run Shor's algorithm at a useful size. But keys and chains last decades, migrating a live chain's accounts is slow and contentious, and data recorded now ("harvest now, decrypt later") stays recorded. QRDX starts post-quantum instead of migrating later.
+
+## What QRDX uses
+
+**ML-DSA-65** (FIPS 204, formerly CRYSTALS-Dilithium3) for signatures, NIST security category 3. Its security rests on lattice problems (Module-LWE and Module-SIS) for which no efficient quantum algorithm is known. QRDX Wallet uses the `@noble/post-quantum` implementation, checked byte for byte against liboqs, which the node uses.
+
+Hashes: keccak-256 for addresses and account ids, BLAKE2b-256 for exchange transaction hashes, BLAKE3 for state roots. All keep at least 128-bit security against Grover.
+
+## What is protected
+
+| Protected by ML-DSA-65 | |
+| --- | --- |
+| Consensus | every block and attestation; validators cannot use classic keys |
+| The `0xPQ…` account | exchange balances, orders, pools, perps positions, tokens; type-`0x51` transfers and contract calls |
+| Exchange transactions | every one; a classic key cannot sign them |
+
+## What is not
+
+- **Classic `0x…` accounts** are still secp256k1. They exist for Ethereum compatibility. Keep value you want protected from quantum attacks in your `0xPQ…` account.
+- **Imported private keys**: an account created from an imported classic key gets a post-quantum key *derived from that classic key*, so it is only as strong as secp256k1. QRDX Wallet labels these **classical PQ**. Create accounts from a recovery phrase.
+- **Account ids are 20 bytes**, for EVM compatibility, which gives about 80 bits of collision resistance (finding *any* two keys with the same id), the same as Ethereum. Taking over a *specific* existing account still requires forging an ML-DSA-65 signature, or a 160-bit second-preimage. See [Accounts](/docs/concepts/accounts).
+- **TLS, the relay and your device.** Connections to nodes and the QRDX Connect relay use today's TLS, and a compromised browser or operating system can read keys while the wallet is unlocked.
+- **Other chains.** Assets bridged in later will be as safe as the chain and bridge they come from.
+
+## Sizes and costs
+
+| | ML-DSA-65 | secp256k1 |
+| --- | --- | --- |
+| Public key | 1,952 bytes | 33 bytes (compressed) |
+| Signature | 3,309 bytes | 65 bytes |
+| Intrinsic gas for a transfer | 145,176 (type `0x51`) | 21,000 |
+
+Larger keys and signatures cost more bandwidth and storage; QRDX prices them in gas. On the exchange, operation gas is fixed per operation, so post-quantum signing adds no per-trade surcharge.

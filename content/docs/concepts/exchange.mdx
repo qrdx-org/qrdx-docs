@@ -1,0 +1,37 @@
+---
+title: The exchange engine
+description: Order books and concentrated-liquidity pools in consensus, and how a swap chooses between them.
+icon: ArrowLeftRight
+---
+
+The exchange is part of the chain's state transition. Validators execute exchange transactions in blocks, every node replays them identically, and the result is committed in the block's state root. There is no exchange contract and no off-chain matching.
+
+## Pairs
+
+A spot pair is always the **sorted** pair: `token0` is the lower name. Native QRDX is named `QRDX` and sorts after every `0x…` address, so a pair with QRDX is priced in QRDX. A pool's price is token1 per token0; a book's base is token0, priced in token1. APIs that take a market accept either order (`base:quote`, addresses, a unique symbol, or `QRDX`).
+
+## Two venues per pair
+
+**Order book (CLOB).** Limit orders rest with price-time priority. A resting order's funds are escrowed in the book's protocol account (`0xCLOB…`). Self-trade prevention cancels the taker at its own resting order, so the book never crosses.
+
+**Pools (AMM).** Concentrated liquidity with Uniswap v3 mathematics: liquidity providers choose a price range; fee tiers of 0.01 %, 0.05 %, 0.3 % and 1 %. A pool's reserves sit in its protocol account (`0xPOOL…`). 70 % of each swap's fee goes to in-range liquidity, 30 % to the protocol.
+
+Creating a pool costs QRDX (stake 10,000, refundable, or burn 5,000) and also creates the pair's order book.
+
+## How a swap routes
+
+A `SWAP` names an input amount and a minimum output. The engine prices it on **every** venue: each of the pair's pools, and the book (walking the bids when selling the base, the asks when buying). It settles entirely with the venue that pays the most. `exchange_quoteSwap` returns exactly what the swap would get now; if nothing trades in between, the swap gets exactly the quote.
+
+<CodeRunner example="swap-quote" />
+
+## Atomic, deterministic
+
+- Every operation is **all-or-nothing**: a swap below its minimum, an unaffordable order or deposit, a cancel of someone else's order is refused whole and changes nothing but the fee.
+- Prices, amounts and fees are exact decimals, the same on every node.
+- Time inside the exchange is **block time**, never a node's clock.
+
+## Market data
+
+The node records every trade (book fills, pool swaps, perps fills) as blocks commit, and serves tickers, books, trades and OHLCV candles in one shape for every market. It keeps the latest 1,000 trades and 1,500 candles per interval per market. See [Market data](/docs/build/market-data).
+
+<CodeRunner example="markets" />

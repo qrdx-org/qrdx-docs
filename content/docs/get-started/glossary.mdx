@@ -1,0 +1,24 @@
+---
+title: Glossary
+description: The terms these docs use.
+icon: BookA
+---
+
+| Term | Meaning |
+| --- | --- |
+| **Account id** | The 20-byte key an account's balance lives under. A `0x…` address is its own account id; a `0xPQ…` address maps to one by a fixed hash. See [Accounts](/docs/concepts/accounts). |
+| **Clearinghouse** | The perpetuals engine. It holds all perps collateral in one protocol account and settles profit and loss between traders' records. See [Perpetuals](/docs/concepts/perpetuals). |
+| **Epoch** | 32 slots. Finality is tracked per epoch. |
+| **Exchange nonce** | A per-account counter for exchange transactions, separate from the account nonce used by EVM transactions. |
+| **Exchange transaction** | A JSON transaction for the native exchange and native tokens (orders, swaps, pools, perps, token operations), signed with an ML-DSA-65 key. See [Exchange transactions](/docs/build/exchange-transactions). |
+| **Funding** | Hourly payments between perpetual longs and shorts that keep the contract price close to the oracle price. |
+| **Mark price** | The price perps margin, liquidations and unrealized PnL use: a robust blend of the oracle price and the order book, held within ±5 % of the oracle. |
+| **ML-DSA-65** | The Module-Lattice Digital Signature Algorithm at security category 3, standardised by NIST in FIPS 204 (formerly CRYSTALS-Dilithium3). QRDX's post-quantum signature. Public keys are 1,952 bytes, signatures 3,309 bytes. |
+| **Native token** | A fungible token that is data in consensus (a registry entry plus balances), not a contract. Every native token is also an ERC-20 inside the EVM. See [Native tokens](/docs/concepts/native-tokens). |
+| **Oracle price** | The stake-weighted median of the external prices validators vote on chain, used by perps. |
+| **Pool** | A concentrated-liquidity automated market maker for one pair at one fee tier. |
+| **`0xPQ…` address** | A post-quantum account's address: `0xPQ` and the first 32 bytes of keccak256 of its ML-DSA-65 public key, checksummed. |
+| **QRDX Connect** | The encrypted relay that lets a site reach QRDX Wallet on another device by QR code. |
+| **Slot** | Two seconds. Each slot has one proposer; a slot may pass without a block. |
+| **Testnet** | The public test network. Its tokens have no value. |
+| **Type `0x51` transaction** | An EVM transaction signed with an ML-DSA-65 key (`0x51` is ASCII `Q`). The sender is derived from the embedded public key. |

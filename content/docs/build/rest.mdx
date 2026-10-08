@@ -1,0 +1,29 @@
+---
+title: REST
+description: The node's data over plain GETs, from any language.
+icon: Globe
+---
+
+Every read the JSON-RPC namespaces offer is also a `GET` on the node, with query parameters. Responses are `{"ok": true, "result": …}` or `{"ok": false, "error": "…"}`.
+
+<RestPlayground path="/get_status" />
+
+## Common reads
+
+<RestPlayground path="/get_token" query={{ token_address: "0x4227d3846511a16656b521361c10faf6358f0708" }} />
+
+<RestPlayground path="/get_swap_quote" query={{ token_in: "QRDX", token_out: "0xe13ef577f2d8c6cb55e49c70e6ed48f64d0fc106", amount_in: "1", sender: "", venue: "auto" }} note="A swap's exact fill right now: venue, amount out, fee, execution price and price impact." />
+
+<RestPlayground path="/get_lp_positions" query={{ address: "0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc" }} />
+
+<RestPlayground path="/get_perp_events" query={{ market_id: "", address: "", types: "funding", since: "", limit: "5" }} note="The perps event feed. types is a comma-separated list of fill, liquidation, funding; since is a sequence number." />
+
+## Writing
+
+Two `POST` endpoints take JSON bodies: `/exchange_signing_payload` (the bytes to sign for an exchange transaction) and `/submit_exchange_tx` (submit it). [Exchange transactions](/docs/build/exchange-transactions) walks through both.
+
+## Limits
+
+Public nodes rate-limit per IP and endpoint, and `get_blocks` is cost-limited (each call costs `offset / 100 + limit / 50` from a budget of 1,000 per IP per hour). For history use the [transaction index](/docs/build/transaction-history); for live data use [streams](/docs/build/streams).
+
+The [REST reference](/docs/reference/rest) lists every endpoint.

@@ -1,0 +1,89 @@
+---
+title: Exchange transactions
+description: Build, sign and submit orders, swaps, pool and token operations, and read their receipts.
+icon: FilePen
+---
+
+Every operation on the native exchange and native tokens is an **exchange transaction**: a JSON object signed with the sender's ML-DSA-65 key. A classic `0x` key cannot sign one.
+
+```jsonc
+{
+  "op_type": 5,                      // or "PLACE_ORDER"
+  "sender": "0xPQ…",
+  "nonce": 4,                        // the sender's next EXCHANGE nonce
+  "params": { "pair": "QRDX:0xe13e…", "side": "buy", "order_type": "limit", "price": "0.5", "amount": "10" },
+  "gas_limit": 100000,
+  "gas_price": "1000000000",         // wei per gas, at least exchange_gasPrice (1 gwei)
+  "public_key": "<hex>",             // must derive to sender
+  "signature": "<hex>"               // ML-DSA-65 over the signing bytes
+}
+```
+
+[Exchange operations](/docs/reference/operations) lists every `op_type` and its parameters.
+
+## 1. Get the nonce
+
+<RpcPlayground method="exchange_getNonce" params={["0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc"]} />
+
+The nonce counts **committed** operations. If you submit several before a block includes them, track the ones in flight yourself and use the next free nonce (QRDX Wallet does this). A transaction that executes uses its nonce even if it fails; one refused at admission does not.
+
+## 2. Get the bytes to sign
+
+The signature covers, concatenated: `op_type` (1 byte), `sender` (UTF-8), `nonce` (8 bytes big-endian), `params` (as Python's `json.dumps(params, sort_keys=True)` renders them, `", "` and `": "` separators included), `gas_limit` (8 bytes big-endian) and `gas_price` (the integer as a decimal string). The transaction hash is BLAKE2b-256 of the same bytes.
+
+Reproducing the params rendering outside Python is error-prone, so **ask the node**: `exchange_getSigningPayload` (or `POST /exchange_signing_payload`) takes the unsigned fields and returns `signing_bytes`, `tx_hash` and the normalised `tx`.
+
+## 3. Sign and submit
+
+Sign `signing_bytes` with ML-DSA-65 (raw bytes, **no** message prefix), add `signature` and `public_key` to the returned `tx`, and send it with `exchange_sendTransaction(tx)` or `POST /submit_exchange_tx` (`{"tx": {…}}`).
+
+This example does everything except submit: it builds an order for a fresh key, fetches the payload, checks the hash itself, signs and verifies.
+
+<CodeRunner example="sign-exchange-tx" />
+
+<Tabs items={['JavaScript', 'Python']}>
+<Tab value="JavaScript">
+```js
+const payload = await rpc('exchange_getSigningPayload', {
+  op_type: 'SWAP', sender: address, nonce,
+  params: { token_in: 'QRDX', token_out: token, amount_in: '1', min_amount_out: minOut },
+})
+const signature = bytesToHex(ml_dsa65.sign(hexToBytes(payload.signing_bytes), secretKey))
+const hash = await rpc('exchange_sendTransaction', { ...payload.tx, signature, public_key: bytesToHex(publicKey) })
+```
+</Tab>
+<Tab value="Python">
+```python
+p = httpx.post(f"{node}/exchange_signing_payload", json={"tx": {
+    "op_type": "SWAP", "sender": address, "nonce": nonce,
+    "params": {"token_in": "QRDX", "token_out": token, "amount_in": "1", "min_amount_out": min_out},
+}}).json()["result"]
+signature = signer.sign(bytes.fromhex(p["signing_bytes"]))          # liboqs ML-DSA-65
+tx = dict(p["tx"], signature=signature.hex(), public_key=public_key.hex())
+httpx.post(f"{node}/submit_exchange_tx", json={"tx": tx})
+```
+</Tab>
+</Tabs>
+
+Admission checks the signature, that the key derives to `sender`, the nonce window and the gas price; the node then gossips the transaction, and any validator can include it. It **executes only in a block**.
+
+## 4. Read the receipt
+
+`exchange_getTransactionReceipt(tx_hash)` (or `GET /get_exchange_receipt`) returns `null` while the transaction is pending, then:
+
+```json
+{ "tx_hash": "…", "block_height": 812, "op": "PERP_ORDER", "sender": "0xPQ…", "nonce": 4,
+  "success": true, "error": "", "gas_used": 60000, "fee": "0.00006",
+  "data": { "order_id": "3f9a…", "resting": false,
+            "fills": [{ "market": "BTC-USD-PERP", "price": "65000", "amount": "0.5", "maker": "0xPQ…" }] } }
+```
+
+`data` depends on the operation: an order id and fills, a swap's amounts, a new pool or position id, a token address. Nodes keep the latest 50,000 receipts.
+
+## Swaps: set a minimum
+
+Quote first with `exchange_quoteSwap`, then send `min_amount_out` = quote × (1 − tolerance). If nothing trades in between, the swap gets exactly the quote; if the price moves past your tolerance, it fails and changes nothing.
+
+## From a dApp
+
+With QRDX Wallet you don't sign yourself: `qrdx_sendExchangeTransaction({ op, params })` shows the user a decoded approval, signs with their key and nonce, and returns `{ txHash, nonce }`. See [Wallet integration](/docs/build/wallet-integration).

@@ -1,0 +1,37 @@
+---
+title: Status and roadmap
+description: What runs today, what is being built, and what the whitepaper plans.
+icon: Map
+---
+
+QRDX is in **public testnet**. This page is the honest state of things; the [whitepaper](https://qrdx.org/whitepaper) describes the full design.
+
+## Live on testnet
+
+| Area | What works |
+| --- | --- |
+| Consensus | proof of stake with ML-DSA-65 validators, 2-second slots, epoch finality, staking deposits and exits, slashing |
+| Accounts | classic and post-quantum accounts in one ledger; type-`0x51` post-quantum EVM transactions |
+| EVM | contracts, logs, Ethereum JSON-RPC; native tokens as ERC-20/ERC-777, NFT collections as ERC-721 |
+| Native tokens | deploy, mint, burn, transfer, allowances, authorities, freezing, Token-2022-style extensions, NFTs |
+| Spot | order books and concentrated-liquidity pools for any pair, including native QRDX; best-venue swaps |
+| Perpetuals | zero-sum clearinghouse, cross and isolated margin, mark price, validator-voted oracle, funding, liquidations, backstop vault |
+| Data | market data, transaction index, WebSocket and SSE streams |
+| Apps | QRDX Wallet (extension, web, iPhone), QRDX Trade, QRDX Explorer, profiles, QRDX Connect |
+
+## Next
+
+- **Security audits** of the node, the wallet and the exchange, then **mainnet launch**.
+- **Bridged stablecoin** as perps collateral on mainnet (testnet uses native QRDX).
+- **Registered chain ids.** Testnet's chain id may change before mainnet; read it from the node.
+
+## Planned (whitepaper)
+
+These are designs, not features you can use yet:
+
+- **Bridges and asset shielding**: moving assets such as ETH and BTC onto QRDX as post-quantum-protected tokens, and back. A bridged asset will be a native token whose mint authority is the bridge.
+- **The Doomsday protocol**: a circuit breaker that would stop classic-to-quantum bridging if a quantum computer demonstrably breaks ECDSA, while still letting users bring shielded assets back.
+- **Governance** of protocol parameters.
+- **Post-quantum multisig** wallets and wider chain adapters.
+
+When these ship, these docs will document them.

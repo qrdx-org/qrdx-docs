@@ -1,0 +1,58 @@
+---
+title: Accounts
+description: One ledger for classic and post-quantum accounts, and the 20-byte account id that joins them.
+icon: UserRound
+---
+
+QRDX has two kinds of credential:
+
+| | Address | Bytes | Signature |
+| --- | --- | --- | --- |
+| Classic | `0x…` (EIP-55) | 20 | secp256k1, signer recovered from the signature |
+| Post-quantum | `0xPQ…` | 32 | ML-DSA-65, public key sent with the signature |
+
+The EVM, Solidity's `address` type and every Ethereum tool are 20-byte addressed, so a 32-byte account could never be named by a contract. QRDX solves this with an **account id**.
+
+## The account id
+
+The ledger is keyed by a 20-byte account id, derived from the address and never stored or registered:
+
+```text
+classic       0x + 40 hex   →  itself
+post-quantum  0xPQ + 64 hex →  keccak256("QRDX-ACCOUNT-ID-v1:pq:" ‖ 32 address bytes)[last 20 bytes]
+```
+
+So `0xPQF024…aCbc` and its account id `0x3583…0942` are the same account: a contract paying the account id credits exactly the balance the post-quantum key controls. Because the id is a pure function, there is no registry that could be missing on some node.
+
+<RpcPlayground method="qrdx_getAccountId" params={["0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc"]} />
+
+| You want to | Use |
+| --- | --- |
+| Send QRDX from MetaMask to a post-quantum account | its account id (an ordinary 20-byte address) |
+| Read a post-quantum account's balance | `eth_getBalance` with either form |
+| See the post-quantum account in a contract | `msg.sender` is its account id |
+
+<Callout type="info" title="A deliberate trade-off">
+  Truncating to 20 bytes gives about 80 bits of collision resistance (grinding two keys to one id), the same bound as Ethereum. It does not weaken the post-quantum property: a spend still needs an ML-DSA-65 signature, and attacking a specific existing account is a 160-bit second-preimage problem.
+</Callout>
+
+## Two accounts per wallet account
+
+Each QRDX Wallet account has both credentials, and on QRDX they are **two ledger accounts**: the `0x` address, and the `0xPQ` address's account id (`pqAccountId`). They have separate balances.
+
+- `eth_sendTransaction` spends from the `0x` account.
+- Exchange operations and `qrdx_sendPQTransaction` (type `0x51`) spend from the post-quantum account.
+
+To trade, fund the `0xPQ…` address. The explorer shows one history for both forms of the same account.
+
+## Protocol accounts
+
+The exchange holds its own balances under protocol addresses that no key can sign for:
+
+| Prefix | Holds |
+| --- | --- |
+| `0xPOOL…` | a pool's reserves |
+| `0xCLOB…` | an order book's escrow (funds of resting orders) |
+| `0xPERP…` | all perps collateral (the clearinghouse) |
+
+They appear in trades and transfers; the wallet refuses them as recipients.

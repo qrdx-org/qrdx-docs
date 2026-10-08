@@ -1,0 +1,8 @@
+{
+  "icon": "Shield",
+  "pages": [
+    "post-quantum-cryptography",
+    "wallet-security",
+    "reporting"
+  ]
+}

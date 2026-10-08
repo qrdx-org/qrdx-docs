@@ -1,0 +1,78 @@
+---
+title: Keys and signing
+description: Generate ML-DSA-65 keys, derive addresses and account ids, and sign and verify messages.
+icon: KeyRound
+---
+
+Everything here runs in your browser with [`@noble/post-quantum`](https://github.com/paulmillr/noble-post-quantum), and matches QRDX Wallet and the node byte for byte.
+
+## Keys and addresses
+
+<CodeRunner example="pq-keys" />
+
+The derivations, so you can reproduce them in any language:
+
+```text title="Address"
+address = "0xPQ" + checksum(hex(keccak256(publicKey)[0:32]))
+
+checksum: h = hex(keccak256(utf8(lowercase hex body)))
+          for each character i: a letter is upper-cased if int(h[i], 16) >= 8
+```
+
+```text title="Account id (the 20-byte ledger key)"
+accountId = "0x" + hex(keccak256(utf8("QRDX-ACCOUNT-ID-v1:pq:") ‖ addressBytes32)[12:32])
+```
+
+<Tabs items={['JavaScript', 'Python']}>
+<Tab value="JavaScript">
+```js
+import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
+
+const seed = crypto.getRandomValues(new Uint8Array(32))     // keep it secret
+const { publicKey, secretKey } = ml_dsa65.keygen(seed)
+const body = keccak_256(publicKey).slice(0, 32)              // the address bytes
+```
+</Tab>
+<Tab value="Python">
+```python
+# pip install liboqs-python pycryptodome
+import oqs
+from Crypto.Hash import keccak
+
+signer = oqs.Signature("ML-DSA-65")
+public_key = signer.generate_keypair()
+k = keccak.new(digest_bits=256); k.update(public_key)
+body = k.digest()[:32]                                        # the address bytes
+```
+</Tab>
+</Tabs>
+
+## Message signatures
+
+`qrdx_signPQMessage` (the wallet) signs `"\x19QRDX PQ Signed Message:\n" + byteLength(message) + message` with ML-DSA-65 and returns `{ signature, publicKey, address }`. ML-DSA does not recover a signer from a signature, so **verify with the public key**, then check that the key derives to the claimed address.
+
+<CodeRunner example="pq-sign" />
+
+```js title="Verifying a signature a wallet gave you"
+import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js'
+
+function prefixed(message) {
+  const body = new TextEncoder().encode(message)
+  const head = new TextEncoder().encode(`\x19QRDX PQ Signed Message:\n${body.length}`)
+  return new Uint8Array([...head, ...body])
+}
+
+const ok = ml_dsa65.verify(hexToBytes(signature), prefixed(message), hexToBytes(publicKey))
+// and: addressOf(publicKey) === claimedAddress (case-insensitive)
+```
+
+The byte length is UTF-8 bytes, not JavaScript string length: non-ASCII messages differ.
+
+## Transactions
+
+Exchange transactions are signed over the exact bytes the node renders for them; see [Exchange transactions](/docs/build/exchange-transactions). EVM transactions from a post-quantum account use the type `0x51` envelope ([Transactions and fees](/docs/concepts/transactions-and-fees)).
+
+<Callout type="warn" title="Never paste a real key into a web page">
+  The examples here make throwaway keys. A real account's seed comes from its recovery phrase and stays in the wallet.
+</Callout>

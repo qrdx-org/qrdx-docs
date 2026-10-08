@@ -1,0 +1,20 @@
+{
+  "title": "QRDX",
+  "pages": [
+    "index",
+    "---Get started---",
+    "...get-started",
+    "---Use QRDX---",
+    "...guides",
+    "---Concepts---",
+    "...concepts",
+    "---Build---",
+    "...build",
+    "---Reference---",
+    "...reference",
+    "---Security---",
+    "...security",
+    "---Project---",
+    "roadmap"
+  ]
+}

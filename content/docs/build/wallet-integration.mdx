@@ -67,7 +67,7 @@ const { txHash } = await qrdx.request({
 // poll exchange_getTransactionReceipt(txHash)
 ```
 
-Every request opens an approval showing the site's real origin, the call decoded ("Buy 0.5 qBTC at 85,000 qUSDC", "Swap 1,000 qUSDC for at least 0.0117 qBTC"), the maximum fee, and warnings (unknown tokens, swaps without a minimum, token approvals).
+Every request opens an approval showing the site's real origin, the call decoded ("Buy 10 QRDX at 920 USDC", "Swap 1,000 USDC for at least 1.08 QRDX"), the result of a dry run against the latest block for EVM transactions, the maximum fee, and warnings (look-alike site names, unknown tokens, swaps without a minimum, token approvals).
 
 **Several operations per block.** The wallet tracks the exchange nonces it has submitted that no block has included, so a dApp can, say, place an order and cancel it before the next block. A `TOKEN_DEPLOY`'s token address is known before inclusion (`0x` + blake2b-160 of `"<sender>:<nonce>:<symbol>"`), so a dApp can create the token's pool in the same block.
 

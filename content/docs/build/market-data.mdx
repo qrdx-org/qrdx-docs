@@ -26,7 +26,7 @@ Level 2 gives each price level's `amount`, running `total` (base) and `notional_
 
 Each trade has a sequence number (`seq`), `price`, `amount`, `quote_amount`, the taker's `side`, the `venue` (`clob`, `amm` or `perp`), `maker`, `taker`, `pool_id` and `tx_hash`. Pass `since` (a `seq`) to get only newer trades; `last_seq` is the newest. Or subscribe to `trades:<market>` on a [stream](/docs/build/streams).
 
-<RpcPlayground method="market_getTrades" params={["0x4227d3846511a16656b521361c10faf6358f0708:0xe13ef577f2d8c6cb55e49c70e6ed48f64d0fc106", 5]} />
+<RpcPlayground method="market_getTrades" params={["QRDX:0x0886aa41d05c4be1ad6c91b728d104fee55a713a", 5]} />
 
 ## Candles
 
@@ -40,4 +40,4 @@ Nodes keep the newest 1,000 trades and 1,500 candles per interval per market, re
 
 ## Pair orientation and USD
 
-The node names a spot pair in sorted order, which is not always how people read it (USDC/WQRDX rather than WQRDX/USDC). The [trade API](/docs/build/trade-api) orients pairs by quote preference, inverts prices to match, and adds USD reference prices.
+The node names a spot pair in sorted order, which is not always how people read it (USDC/QRDX rather than QRDX/USDC). The [trade API](/docs/build/trade-api) orients pairs by quote preference, inverts prices to match, and adds USD reference prices.

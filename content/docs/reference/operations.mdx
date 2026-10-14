@@ -71,12 +71,34 @@ An order's id is the first 16 characters of its transaction hash; the receipt re
 
 ## Staking
 
-| Op | # | Params | Gas |
-| --- | --- | --- | --- |
-| `STAKE_DEPOSIT` | 15 | `stake_amount` (at least 100,000 QRDX, debited from the sender), `validator_public_key` (ML-DSA-65, hex) | 150,000 |
-| `STAKE_EXIT` | 16 | — : the sender's validator starts exiting | 80,000 |
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `STAKE_DEPOSIT` | 15 | `stake_amount` (at least 100,000 QRDX, debited from the sender), `validator_public_key` (ML-DSA-65, hex) | the validator's account | 150,000 |
+| `STAKE_EXIT` | 16 | — : the sender's validator starts exiting | a validator | 80,000 |
+| `STAKE_DELEGATE` | 53 | `validator`, `amount` (QRDX, at least 1; joins the pool after the warm-up) | anyone | 60,000 |
+| `STAKE_UNDELEGATE` | 54 | `validator`, `shares` (or `"all"`, which also refunds what is warming up) | a delegator | 40,000 |
+| `STAKE_SET_COMMISSION` | 55 | `commission_bps` (0–10,000; from the next epoch) | a validator | 25,000 |
 
-[Consensus](/docs/concepts/consensus) explains the validator lifecycle.
+[Consensus](/docs/concepts/consensus) explains the validator lifecycle and delegation pools; [Staking and delegation](/docs/guides/staking) walks through delegating.
+
+## Governance
+
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `GOV_PROPOSE` | 48 | `action` (`system_spend` \| `freeze_master` \| `approve_fork`), `memo?` (≤ 280 characters); `system_spend`: `wallet`, `to`, `amount`; `approve_fork`: `fork`, `height`, `definition_hash` | a committee validator | 100,000 |
+| `GOV_VOTE` | 49 | `proposal_id`, `support` (`true` \| `false`) | a validator in the proposal's snapshot | 30,000 |
+| `GOV_VETO` | 50 | `proposal_id`, `amount` (QRDX locked until the proposal resolves) | anyone, during the timelock | 50,000 |
+| `GOV_EXECUTE` | 51 | `proposal_id` | anyone, after the timelock | 80,000 |
+
+[Governance](/docs/guides/governance) explains the lifecycle.
+
+## Bridge
+
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `BRIDGE_WITHDRAW` | 52 | `token_address` (a bridged token), `amount`, `to` (the recipient on the source chain, `0x…`) | any holder | 60,000 |
+
+Deposits are not an operation: validators attest them in their `ORACLE_VOTE`s. [Bridge](/docs/guides/bridge) explains both directions.
 
 ## Retired
 

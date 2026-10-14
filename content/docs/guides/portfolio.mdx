@@ -13,7 +13,12 @@ icon: ChartPie
 - **Profit and loss chart**: cumulative realized PnL over 24 hours, 7 days, 30 days or everything recorded, with a dashed segment to *now* that adds open positions at the current price.
 - **Allocation**: each holding's USD value and share.
 - **PnL by market**: fills, volume, realized and open PnL, position and average cost per market.
-- **Balances, open orders, liquidity positions, perps positions and orders**, with cancel buttons for your own orders.
+- **Balances, open orders, liquidity positions, perps positions and orders**, with cancel and edit buttons for your own orders.
+
+## Exports
+
+- **PnL CSV**: the PnL-by-market table, in each market's units and in USD.
+- **Activity CSV**: every exchange operation the account signed or took part in (orders, cancels, swaps, fills as a maker, pools, perps, staking, tokens), from the node's transaction index: time, block, hash, operation, role, status, asset, amount, counterparty, fee, and the parameters as JSON. It covers up to the newest 10,000 operations.
 
 ## How PnL is computed
 

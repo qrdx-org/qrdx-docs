@@ -41,10 +41,13 @@ They are two separate balances. Send QRDX to the `0xPQ…` address to trade. [Ac
 
 Sites ask the wallet to connect; you choose which accounts to share. After that, every signature and transaction opens an approval screen showing:
 
-- the site's real origin (taken from the browser, not from the site),
-- what you are signing, decoded: "Buy 0.5 qBTC at 85,000 qUSDC", "Swap 1,000 qUSDC for at least 0.0117 qBTC",
+- the site's real origin (taken from the browser, not from the site), with a warning when its name looks like a well-known site it is not (`uniswop.org`, `qrdx-airdrop.xyz`), uses look-alike international characters, or is a bare IP address,
+- what you are signing, decoded: "Buy 10 QRDX at 920 USDC", "Swap 1,000 USDC for at least 1.08 QRDX",
+- for an EVM transaction, the result of running it against the latest block first: whether it would succeed (or why it would revert) and the balance changes and token allowances it carries,
 - the maximum fee,
 - warnings for unknown tokens, swaps without a minimum output, and token approvals.
+
+The look-alike check works on the site's name alone; there is no list of known scam sites behind it yet, so a site with an unremarkable name passes.
 
 **From a phone**, a site shows a QR code. In the wallet choose **Connect to a site** and scan it (or scan with the camera). The connection is end-to-end encrypted through a relay; you approve each request on the phone. Approve only a code you just scanned from your own screen.
 
@@ -59,4 +62,14 @@ More in [Wallet security](/docs/security/wallet-security).
 
 ## What the wallet can do
 
-Send and receive QRDX and tokens, swap, trade spot and perps markets, provide liquidity, stake as a validator, and connect to sites. The **Trade** screen uses the same markets and numbers as [trade.qrdx.org](https://trade.qrdx.org).
+Send and receive QRDX and tokens, swap, trade spot and perps markets, provide liquidity, [delegate or run a validator](/docs/guides/staking), hold and send [NFTs](/docs/guides/nfts), and connect to sites. The **Trade** screen uses the same markets and numbers as [trade.qrdx.org](https://trade.qrdx.org).
+
+- **Balances** lead with their value in your currency (Settings → Currency), with the QRDX amount and the day's change underneath.
+- **Accounts.** Tap the account name to switch accounts, see each one's balance, or add one.
+- **Token pages.** Tap a token for its price chart (1 hour to 1 month), your balance on each address, its supply and authorities, and your activity in it. Hide a token you don't want listed; **All tokens → Show hidden** brings it back.
+- **Every send is reviewed** before it is signed: recipient, amount in your currency, account, network, fee and total, with a warning for an address you have never sent to. Stakes and NFT transfers are reviewed the same way.
+- **Recipients.** The send form suggests the people you sent to recently, your other accounts and your contacts; typing filters them.
+- **Activity** comes from the node's transaction index, so it shows everything the account did or received, from any device. Tap a transaction for its details, to send again, or to save the other party as a contact. On Ethereum and other EVM networks, a pending transaction can be sped up or cancelled (resent at the same nonce with a higher fee); QRDX nodes don't accept replacements, and a QRDX block comes every 250 ms.
+- **Explore** lists what trades on the network: its markets with price, 24-hour change and volume, the perpetuals, and new token launches.
+- **Swap** lets you set a custom maximum slippage and how long a signed swap stays valid.
+- **Notifications** (Settings → Notifications): funds received, your sends confirming or failing, and price alerts you set. They are checked while the wallet is open.

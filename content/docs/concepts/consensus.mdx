@@ -1,6 +1,6 @@
 ---
 title: Consensus and validators
-description: "Post-quantum proof of stake: slots, epochs, finality, staking and slashing."
+description: "Post-quantum proof of stake: slots, epochs, finality, staking, delegation and slashing."
 icon: ShieldCheck
 ---
 
@@ -8,27 +8,52 @@ QRDX is a proof-of-stake chain in which **every validator signs with ML-DSA-65**
 
 | Parameter | Value |
 | --- | --- |
-| Slot | 2 seconds; one proposer per slot, chosen by stake with RANDAO randomness. A slot may pass without a block. |
-| Epoch | 32 slots |
-| Finality | an epoch is finalized when attestations carry two-thirds of the active stake |
-| Minimum stake | 100,000 QRDX |
+| Slot | 250 milliseconds; one proposer per slot, chosen by weight with RANDAO randomness. A slot may pass without a block. |
+| Epoch | 32 slots (8 seconds) |
+| Finality | an epoch is finalized when attestations carry two-thirds of the active weight |
+| Minimum stake | 100,000 QRDX to activate; a validator below 50,000 QRDX is ejected |
 | Maximum active validators | 150 |
-| Activation delay | 4 epochs after the deposit |
+| Activation delay | 4 epochs after the deposit (32 seconds) |
+| Unbonding | 40,320 epochs (about 3.7 days), then a withdrawal delay of 2,048 epochs (about 4.6 hours) |
+| Staking rate | 5 % a year (`STAKING_REWARD_RATE_BPS` 500), new QRDX |
 
-<RestPlayground path="/get_validators" />
+Slot and epoch lengths, the delays and the staking rate are chain-spec parameters: read them from the node rather than hard-coding them (`/chain_spec`, `staking_getParams`).
+
+<RpcPlayground method="staking_getParams" />
+
+## Weight
+
+A validator's **weight** is its effective stake plus the value of its delegation pool. Weight decides how often it proposes, how much its finality votes count, and its say in [governance](/docs/guides/governance), the perps oracle and bridge attestations. The validator set of each epoch is computed from the genesis set and the chain's blocks, so every node computes the same one.
+
+<RpcPlayground method="staking_getValidators" />
 
 ## Becoming a validator
 
 1. Run a node with a post-quantum validator key.
 2. Hold at least 100,000 QRDX in that key's account.
-3. Send a `STAKE_DEPOSIT` exchange transaction with `stake_amount` and `validator_public_key`. The stake is **debited**, so it is genuinely at risk; the validator is registered as pending and activated a few epochs later by every node alike.
-4. To leave, send `STAKE_EXIT`. The stake is refunded at the exit epoch once it is finalized.
+3. Send a `STAKE_DEPOSIT` exchange transaction with `stake_amount` and `validator_public_key`. The stake is **debited**, so it is genuinely at risk; the validator is registered as pending and activated 4 epochs later by every node alike. A deposit the exchange refuses (more stake than the sender holds) registers nothing.
+4. To leave, send `STAKE_EXIT`. The validator is exiting for the unbonding period, and its stake is returned after the withdrawal delay, unless it was slashed in the meantime.
 
-A validator whose stake falls below 50,000 QRDX is ejected. There is no delegation: each validator stakes its own QRDX.
+A validator sets the commission it takes from its pool's rewards with `STAKE_SET_COMMISSION` (0–10,000 basis points; 1,000, that is 10 %, until it sets one). A change applies from the next epoch.
+
+## Delegation
+
+Anyone can stake with a validator without running one. Each validator has a **pool**: delegators hold shares of it, and its rewards raise the share price.
+
+| Operation | Effect |
+| --- | --- |
+| `STAKE_DELEGATE {validator, amount}` | Debits `amount` QRDX (at least 1). After a 4-epoch warm-up it joins the pool as shares at the pool's price. A delegation to an address that is no longer a validator then is refunded. |
+| `STAKE_UNDELEGATE {validator, shares}` | Burns the shares (or `"all"`) at the pool's price at the end of the epoch. The QRDX is paid after unbonding plus the withdrawal delay, and is slashed with the pool until then. |
+
+[Staking and delegation](/docs/guides/staking) walks through it on trade.qrdx.org and in the wallet.
+
+<RpcPlayground method="staking_getPools" />
+
+## Rewards
+
+Each epoch, every active validator whose finality vote for that epoch the chain carries earns the staking rate, scaled to one epoch, on its own stake and on its pool's value. It keeps its own share plus its commission on the pool's share; the rest is added to the pool, so delegators' shares grow and compound. A validator that misses its vote earns nothing for that epoch, and neither does its pool. Rewards are paid by the first block of a later epoch.
 
 ## Slashing
-
-A slashed validator never reaches the exited state, so it forfeits its stake.
 
 | Offence | Penalty |
 | --- | --- |
@@ -36,11 +61,12 @@ A slashed validator never reaches the exited state, so it forfeits its stake.
 | Surround vote | 50 % |
 | Invalid attestation | 30 % |
 | Extended downtime | 5 % |
+| Bridge fraud | 100 % |
 
-A whistleblower receives 1/512 of the slashed amount, and the proposer that includes the evidence 1/32.
+A slashed validator is out of the set and never reaches the exited state, so it forfeits the slashed stake. Its pool loses half its value and is paid out to the delegators after the withdrawal delay, and its unbonding delegations lose half of what is still unpaid. A whistleblower receives 1/512 of the slashed amount, and the proposer that includes the evidence 1/32.
 
 ## Validators and the oracle
 
-Validators also vote external USD prices for the perps markets (`ORACLE_VOTE`). Each proposer attaches its own vote to the blocks it proposes, from a median of public exchange prices. Votes are most of the transactions on testnet; the explorer hides them by default.
+Validators also vote external USD prices for the perps markets (`ORACLE_VOTE`) and attest [bridge](/docs/guides/bridge) deposits in the same votes. Each proposer attaches its own vote to the blocks it proposes, from a median of public exchange prices. Votes are most of the transactions on testnet; the explorer hides them by default.
 
 <LiveStatus />

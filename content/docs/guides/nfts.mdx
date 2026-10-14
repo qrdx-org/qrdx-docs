@@ -1,0 +1,39 @@
+---
+title: NFTs
+description: Create a collection, mint, and hold and send NFTs in the wallet.
+icon: Image
+---
+
+NFTs on QRDX are native, like [tokens](/docs/concepts/native-tokens): a collection is a registry entry and each NFT is a record of its owner, held in consensus, with no contract to deploy. They are moved by exchange transactions signed with ML-DSA-65.
+
+<RpcPlayground method="exchange_getNftCollections" />
+
+## In the wallet
+
+The **NFTs** tab of the QRDX Wallet lists the NFTs your account owns on the network, grouped by collection, with their images, descriptions and traits from their metadata. Open one to see it in full, view it on the explorer, or **Send** it: the wallet shows the collection, the token id and the recipient for review before it signs `NFT_TRANSFER`. NFTs are held by your quantum-safe (`0xPQ`) account.
+
+## Metadata
+
+A collection and each NFT carry a `uri`. Wallets read it as JSON in the common format: `name`, `description`, `image`, and `attributes` (`trait_type` and `value`). `https://`, `ipfs://` and `data:` URIs are all read. Point `image` at a stable location: the chain stores the URI, not the file.
+
+## Create a collection and mint
+
+1. `NFT_CREATE_COLLECTION` with `name`, `symbol` and `uri`; optionally `max_supply`, royalties (`royalty_bps` and `royalty_recipient`), a `mint_authority` and an `update_authority` (you, by default), and `non_transferable` for soulbound tokens.
+2. `NFT_MINT` with `collection`, and `to`, `uri`, `name` or `token_id` as needed. Only the mint authority can mint.
+3. Hand over or renounce an authority with `NFT_SET_AUTHORITY`. Renouncing the mint authority fixes the collection's supply for good.
+
+The [operations reference](/docs/reference/operations#nfts) lists every NFT operation with its parameters and gas.
+
+## Reading NFTs
+
+| Read | |
+| --- | --- |
+| `exchange_getNftCollections` | Every collection. |
+| `exchange_getNftCollection(collection)` | One collection: metadata, supply, royalties, authorities. |
+| `exchange_getNft(collection, token_id)` | One NFT: owner, URI, approved account. |
+| `exchange_getNftsOf(owner, collection?, limit?)` | The NFTs an account owns. |
+| `exchange_isNftOperator(collection, owner, operator)` | Whether an operator may move all of an owner's NFTs in a collection. |
+
+<RpcPlayground method="exchange_getNftsOf" params={["0xPQ7883B5195F95a3A17884a20FB91c015bf6adDA07Ce35A6bcF7Fb6e0C599a5130", null, 20]} editable />
+
+Inside the EVM, each collection is also an ERC-721, and transfers emit the standard `Transfer` event with the token id indexed.

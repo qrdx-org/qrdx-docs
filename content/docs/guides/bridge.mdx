@@ -1,0 +1,43 @@
+---
+title: Bridge
+description: Bring tokens from another chain to QRDX and send them back.
+icon: ArrowLeftRight
+---
+
+The consensus bridge mints a token on QRDX when the validators attest that it was locked in the bridge's lockbox on its home chain, and burns it when it goes back. No key controls the bridged tokens: only the bridge can mint them, and they have no freeze, pause or metadata authority.
+
+<RpcPlayground method="bridge_getAssets" />
+
+## Which tokens
+
+The bridged assets are a chain-spec parameter (`BRIDGE_ASSETS`), so every node agrees on them and adding one is a network upgrade. Each entry names a symbol, the source chain, the token's address there and its decimals. Its QRDX address is derived from its source and listed by `bridge_getAssets`. An empty list means the network bridges nothing yet; testnet currently lists none.
+
+## Deposit: to QRDX
+
+1. On the source chain, approve the lockbox and call `deposit(token, amount, recipient)`, naming your QRDX address (`0xPQ…` or `0x…`).
+2. Validators read the lockbox up to the source chain's **finalized** block, never past it, and attest the deposit in their votes.
+3. When attestations that agree on every field carry more than two thirds of the committee's stake, the token is minted to the recipient. A deposit is minted once, however many attestations follow.
+
+How long it takes depends mostly on the source chain's finality. Attestations that never reach a quorum are dropped after 24 hours of block time and made again by validators that still see the deposit.
+
+A deposit's id is `<source chain id>:<transaction hash>:<log index>`. Look it up on the [explorer's Bridge page](https://explorer.qrdx.org/bridge), or ask the node:
+
+<RpcPlayground method="bridge_getDeposit" params={["42161:0x0000000000000000000000000000000000000000000000000000000000000000:0"]} editable />
+
+`minted: true` means it has arrived; `pending` lists the versions of it validators have attested so far.
+
+## Withdraw: back to the source chain
+
+`BRIDGE_WITHDRAW {token_address, amount, to}` burns the tokens from your account and records a withdrawal with a sequential id, naming the recipient on the source chain (a `0x` address). The lockbox's custodian then releases it there once the QRDX block is final; the lockbox refuses an id twice. The source chains cannot verify ML-DSA signatures, so the release is the custodian's act: the one trust this design names.
+
+<RpcPlayground method="bridge_getWithdrawals" params={[1, 20]} editable />
+
+The explorer's Bridge page lists withdrawals newest first. The node records the burn, not the release, so check the release on the source chain.
+
+## In the wallet
+
+**Shield** in the QRDX Wallet lists the assets the network bridges, and moves funds from your classic (`0x`) account to your quantum-safe one, which works on every QRDX network.
+
+| Op | # | Params | Gas |
+| --- | --- | --- | --- |
+| `BRIDGE_WITHDRAW` | 52 | `token_address` (a bridged token), `amount`, `to` (the recipient on the source chain) | 60,000 |

@@ -22,6 +22,13 @@ A limit order rests on the book until it fills or you cancel it. While it rests,
 
 The order appears in **Open orders** once a block includes it. Several orders can be placed before the first is included: the wallet tracks the nonces it has submitted.
 
+### Managing open orders
+
+- **Edit** (the pencil) changes an order's price or size. The node has no amend operation, so the order is replaced: cancelled, then placed again at the new terms, one signature each. The new order joins the back of the queue at its price, and if the cancel lands but the new order is refused, no order is left.
+- **Cancel all** cancels every open order on the list. Each cancel is its own transaction, so the wallet asks for each; they land in order.
+
+The same works for perps orders.
+
 ## Swaps and market orders
 
 A swap spends a fixed amount and receives whatever the best venue pays:
@@ -35,6 +42,10 @@ The swap settles entirely with the venue that pays the most. Before you sign, th
   A swap that would receive less than its minimum, an order you cannot afford, or a cancel of someone else's order is refused whole. The chain records the failure; your balances do not change except for the fee.
 </Callout>
 
+## Alerts
+
+The bell next to a market's name sets a **price alert**: above or below a price in the market's quote asset (USD for perps). The site checks it against the last price while a QRDX Trade tab is open and tells you once, with a browser notification if you allow them, and then removes it. You are also told when one of your resting orders fills.
+
 ## Fees
 
 - **Pool fees** depend on the pool's tier: 0.01 %, 0.05 %, 0.3 % or 1 %. 70 % go to the liquidity providers in range, 30 % to the protocol.
@@ -42,7 +53,7 @@ The swap settles entirely with the venue that pays the most. Before you sign, th
 
 ## Charts and data
 
-Prices, candles, trades and 24-hour statistics come from the chain's own fills and pool swaps. Where a token has an outside market, the site also shows its USD **index price** from public exchanges, labelled as reference data. Nothing is generated or padded.
+Prices, candles, trades and 24-hour statistics come from the chain's own fills and pool swaps. The order book's **Depth** view draws the book as cumulative size against price; click it to use a price in the order form. Where a token has an outside market, the site also shows its USD **index price** from public exchanges, labelled as reference data. Nothing is generated or padded.
 
 ## From code
 

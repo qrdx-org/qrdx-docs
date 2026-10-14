@@ -1,0 +1,53 @@
+---
+title: Staking and delegation
+description: Earn the staking rate by delegating QRDX to a validator, or run one yourself.
+icon: Landmark
+---
+
+You don't need to run a validator to stake. Delegating puts QRDX in a validator's **pool**: it adds to that validator's weight, and the pool earns the staking rate (5 % a year on testnet) for every epoch the validator's vote makes it on chain, less the validator's commission. [Consensus](/docs/concepts/consensus#delegation) has the rules.
+
+<RpcPlayground method="staking_getPools" />
+
+## Delegate on trade.qrdx.org
+
+[Stake](https://trade.qrdx.org/stake) lists the validators with their weight, commission and what you would earn after it.
+
+1. Connect the QRDX Wallet. Delegations are signed by its quantum-safe (`0xPQ`) account and paid from that account's QRDX.
+2. Pick a validator and enter an amount (at least 1 QRDX). Keep a little QRDX for fees.
+3. Approve `STAKE_DELEGATE` in the wallet.
+
+The delegation **warms up for 4 epochs** (about 32 seconds) and then joins the pool as shares at the pool's price. **Your stake** shows each position's value, how much you delegated, and what it has earned since; rewards compound into your shares, so there is nothing to claim.
+
+## Delegate in the wallet
+
+**Stake** on the wallet's dashboard does the same: choose a validator, enter an amount, review, confirm. It lists your positions and pending payouts.
+
+## Undelegate
+
+Enter an amount (or undelegate everything) on the position and approve `STAKE_UNDELEGATE`. Your shares are redeemed at the pool's price at the end of the epoch, and the QRDX is paid after **unbonding** (40,320 epochs, about 3.7 days) plus the **withdrawal delay** (2,048 epochs, about 4.6 hours). Until it is paid it is still at risk: if the validator is slashed in that time, your unbonding QRDX loses half.
+
+Undelegating "all" also refunds a delegation that is still warming up.
+
+## Choosing a validator
+
+- **Commission.** The validator's cut of its pool's rewards. A change takes effect the next epoch, and `staking_getPools` shows a pending one as `next_commission_bps`.
+- **Reliability.** A validator that misses its vote earns nothing for that epoch, and neither does its pool. The [explorer](https://explorer.qrdx.org/validators) shows the blocks each validator proposed.
+- **Concentration.** Stake spread across validators keeps the network's two-thirds thresholds (finality, governance, the oracle, the bridge) hard to reach for any one party.
+- **Slashing.** A validator caught double signing loses half its stake, and its pool loses half its value. Delegate to operators you trust to run their node carefully.
+
+## Run a validator
+
+A validator stakes at least 100,000 QRDX of its own with `STAKE_DEPOSIT` from the account whose ML-DSA-65 key its node signs with, and is activated 4 epochs later. **Stake → Run your own validator** in the wallet sends it with the account's key; the node must then be running with that key. `STAKE_EXIT` starts leaving: the validator stops earning, and its stake comes back after unbonding and the withdrawal delay. A validator sets its commission with `STAKE_SET_COMMISSION`.
+
+## For developers
+
+| Read | |
+| --- | --- |
+| `staking_getValidators` | Every validator: status, own and effective stake, delegated value, weight, earned, activation and exit epochs, slashed. |
+| `staking_getPools` | Every pool: commission (and a pending change), value, shares, share price, delegators, QRDX warming up. |
+| `staking_getDelegations(address)` | An account's positions (shares, value, warm-up) and the payouts it is owed. |
+| `staking_getParams` | The staking rate, default commission, minimum delegation and validator stake, and the epoch delays. |
+
+<RpcPlayground method="staking_getDelegations" params={["0xPQ7883B5195F95a3A17884a20FB91c015bf6adDA07Ce35A6bcF7Fb6e0C599a5130"]} editable />
+
+The operations are in the [operations reference](/docs/reference/operations#staking). A position's history is in the account's transaction index: `/get_address_history?address=…&kinds=exchange` lists its `STAKE_DELEGATE` and `STAKE_UNDELEGATE` operations.

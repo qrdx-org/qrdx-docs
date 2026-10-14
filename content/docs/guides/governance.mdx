@@ -1,0 +1,56 @@
+---
+title: Governance
+description: How validators propose and vote, how holders veto, and how a decision takes effect.
+icon: Gavel
+---
+
+Validators propose and decide; QRDX holders can veto; nothing takes effect until a timelock has passed. Governance is exchange state, so its operations are ordinary exchange transactions, signed with ML-DSA-65 and replayed by every node.
+
+<RpcPlayground method="governance_getStatus" />
+
+## What it governs
+
+| Action | Effect when executed |
+| --- | --- |
+| `system_spend` | moves QRDX from a system wallet (treasury, grants, …) to a recipient |
+| `freeze_master` | ends the genesis master controller's authority over the system wallets |
+| `approve_fork` | authorises a fork scheduled in the chain spec to activate |
+
+## Lifecycle
+
+1. **Propose.** A validator in the committee (the validator set in force at the block, weighted by stake plus delegated stake) sends `GOV_PROPOSE`. The committee's weights are snapshotted then: stake moved during the vote doesn't count.
+2. **Vote.** Each committee validator sends `GOV_VOTE` with `support: true` or `false`. Votes are final.
+3. **Pass or fail.** The proposal passes when "yes" reaches two thirds of the snapshot's weight (`GOV_APPROVAL_THRESHOLD_BPS`, 6,667). It is rejected as soon as passing is no longer possible, or when voting ends.
+4. **Timelock.** A passed proposal waits `GOV_TIMELOCK_BLOCKS`. During it, **any holder can veto** by locking QRDX against it with `GOV_VETO`. When the locked QRDX reaches `GOV_VETO_THRESHOLD_QRDX`, the proposal is stopped. Vetoes lock real QRDX in an escrow, so one balance cannot count twice; it comes back when the proposal resolves (vetoed, executed or expired).
+5. **Execute.** After the timelock, anyone can execute it with `GOV_EXECUTE`, until the execution window closes. After that it can only be closed as expired.
+
+Every deadline is a block height. At 250 ms a block, 691,200 blocks (testnet's timelock) is two days. Read the live parameters from `governance_getStatus`.
+
+| Limit | |
+| --- | --- |
+| Open proposals per validator | 4 |
+| Open proposals on the chain | 64 |
+| Memo | 280 characters |
+
+## Following a proposal
+
+The [explorer's Governance page](https://explorer.qrdx.org/governance) lists proposals with their status, the vote so far against the threshold, the deadline, each validator's vote and weight, and any vetoes. Open one and use **Copy link** to share it; the link opens that proposal.
+
+<RpcPlayground method="governance_getProposals" params={[null, 20]} editable />
+
+## The master controller
+
+At genesis one key controls the system wallets. That authority ends by itself at block `SYSTEM_WALLET_MASTER_SUNSET_HEIGHT`, or earlier if an executed `freeze_master` proposal ends it. After that, system-wallet funds move only through `system_spend` proposals. Freezing is irreversible, and covers only the key's authority over the system wallets: its own account stays spendable.
+
+## Approving forks
+
+An `approve_fork` proposal names the fork, its height and its definition hash. `governance_getForkApprovalParams(fork)` returns those fields for a fork in the node's chain spec. The fork activates only if the approval executed at least `GOV_FORK_APPROVAL_LEAD_BLOCKS` before its height; otherwise it stays dormant on every node.
+
+## Operations
+
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `GOV_PROPOSE` | 48 | `action`, `memo?`; `system_spend`: `wallet`, `to`, `amount`; `approve_fork`: `fork`, `height`, `definition_hash` | a committee validator | 100,000 |
+| `GOV_VOTE` | 49 | `proposal_id`, `support` (`true` \| `false`) | a committee validator in the snapshot | 30,000 |
+| `GOV_VETO` | 50 | `proposal_id`, `amount` (QRDX locked) | any holder, during the timelock | 50,000 |
+| `GOV_EXECUTE` | 51 | `proposal_id` | anyone, after the timelock | 80,000 |

@@ -6,7 +6,7 @@ icon: Braces
 
 A node serves JSON-RPC 2.0 at `POST /rpc` (testnet: `https://test.qrdx.org/rpc`). This list is generated from the node's source and every method on it answered on testnet. Parameters marked `?` are optional. Amounts and prices are decimal strings.
 
-<Callout type="info">Peer-to-peer methods (`p2p_*`, `dht_*`) are for nodes talking to each other and are not listed. The `bridge_*` and `validator_*` namespaces are not enabled on testnet.</Callout>
+<Callout type="info">Peer-to-peer methods (`p2p_*`, `dht_*`) are for nodes talking to each other and are not listed. The bridge's Doomsday reads (`bridge_getDoomsdayStatus`, `bridge_getCanaryInfo`, …) and the `validator_*` namespace are not enabled on testnet.</Callout>
 
 ## eth
 
@@ -64,6 +64,45 @@ QRDX-specific reads.
 | `qrdx_getPendingTransactions` | `limit?`, `offset?` | Returns pending transactions from the mempool. |
 | `qrdx_getNetworkInfo` | — | Network statistics. |
 | `qrdx_getPeers` | — | This node's peers. |
+| `qrdx_chainSpec` | — | The network this node follows: chain id, chain-spec parameters (slot length, staking, governance, bridge assets, …), active rules, scheduled forks with their approval state, fork id and node version. The same as `GET /chain_spec`. |
+
+## staking
+
+Validators, delegation pools and an account's stake ([Consensus](/docs/concepts/consensus), [Staking and delegation](/docs/guides/staking)). Every value is computed from the chain at the tip.
+
+| Method | Params | |
+| --- | --- | --- |
+| `staking_getValidators` | — | Every validator: `address`, `status`, `stake`, `effective_stake`, `delegated` (its pool's value), `weight`, `earned`, `activation_epoch`, `exit_epoch`, `slashed`. |
+| `staking_getPools` | — | Every delegation pool: `validator`, `commission_bps`, `next_commission_bps`, `value`, `total_shares`, `share_price`, `delegators`, `warming_up`. |
+| `staking_getDelegations` | `address` | An account's `stakes` (per validator: `shares`, `value`, `warming_up` with the epoch each joins) and the `payouts` it is owed (`kind`, `amount`, `due_epoch`, `validator`). |
+| `staking_getParams` | — | `reward_rate_bps_per_year`, `reward_rate_per_epoch`, `default_commission_bps`, `min_delegation`, `min_validator_stake`, `warmup_epochs`, `unbonding_epochs`, `withdrawal_delay_epochs`. |
+
+<RpcPlayground method="staking_getValidators" />
+
+## governance
+
+Proposals, votes and vetoes ([Governance](/docs/guides/governance)). Deadlines are block heights.
+
+| Method | Params | |
+| --- | --- | --- |
+| `governance_getStatus` | — | The parameters, the master controller's authority, approved and scheduled forks, the number of open proposals, the veto escrow and the committee's weights. |
+| `governance_getProposals` | `status?` (`open`, `voting`, `passed`, `executed`, `rejected`, `vetoed`, `expired`), `limit?` (50, at most 500) | Proposals, newest first, each with its `status` at the tip and `threshold_bps`. |
+| `governance_getProposal` | `proposal_id` | One proposal: action, params, memo, proposer, the weight snapshot, votes, vetoes, and its deadlines. |
+| `governance_getForkApprovalParams` | `fork` | What a validator puts in an `approve_fork` proposal for a fork in this node's chain spec: its name, height and definition hash. |
+
+<RpcPlayground method="governance_getStatus" />
+
+## bridge
+
+The consensus bridge's ledger ([Bridge](/docs/guides/bridge)).
+
+| Method | Params | |
+| --- | --- | --- |
+| `bridge_getAssets` | — | The bridged assets: `symbol`, `chain` (source chain id), `source_token`, `decimals`, `token_address` (on QRDX), `supply` here, `mint_authority`. |
+| `bridge_getDeposit` | `deposit_id` (`chain:txhash:logindex`) | `minted`, and the versions of the deposit validators have attested so far (`pending`: the deposit, its voters, since which block). |
+| `bridge_getWithdrawals` | `from_id?` (1), `limit?` (100, at most 1000) | Withdrawals in id order: `id`, `chain`, `token`, `to`, `amount`, `from`, `height`, `tx_hash`. |
+
+<RpcPlayground method="bridge_getAssets" />
 
 ## exchange
 

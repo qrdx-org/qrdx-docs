@@ -12,6 +12,17 @@ NFTs on QRDX are native, like [tokens](/docs/concepts/native-tokens): a collecti
 
 The **NFTs** tab of the QRDX Wallet lists the NFTs your account owns on the network, grouped by collection, with their images, descriptions and traits from their metadata. Open one to see it in full, view it on the explorer, or **Send** it: the wallet shows the collection, the token id and the recipient for review before it signs `NFT_TRANSFER`. NFTs are held by your quantum-safe (`0xPQ`) account.
 
+## Buy and sell on QRDX Trade
+
+[trade.qrdx.org/nfts](https://trade.qrdx.org/nfts) lists every collection on the network with its floor, listings and volume, and each collection's NFTs with their prices.
+
+- **Buy.** A listing has a price in QRDX or in a token. Buying is one EVM transaction to the market contract: it moves the NFT to you, pays the seller, and pays the collection's royalty to its creator, all at once or not at all. For a token price the wallet first asks you to let the market take that amount.
+- **List.** Open one of your NFTs, set a price and a currency. The first time, the wallet asks you to let the market move NFTs of that collection (`NFT_SET_APPROVAL_FOR_ALL`); it can move one only when it sells. Your NFT stays in your account until then.
+- **Change the price or cancel** from the same place. A listing whose seller no longer owns the NFT, or no longer approves the market, is **stale**: it cannot sell, and anyone can clear it.
+- **Create a collection and mint** under **Create a collection**; its page then has a mint form for you.
+
+Nothing is held in escrow and the contract has no owner or fee. Every call is run against the latest block before the wallet signs it, so one that would fail says why instead of costing its fee.
+
 ## Metadata
 
 A collection and each NFT carry a `uri`. Wallets read it as JSON in the common format: `name`, `description`, `image`, and `attributes` (`trait_type` and `value`). `https://`, `ipfs://` and `data:` URIs are all read. Point `image` at a stable location: the chain stores the URI, not the file.

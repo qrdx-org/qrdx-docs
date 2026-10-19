@@ -28,9 +28,23 @@ A token has optional authorities. Each can be handed over or renounced; **renoun
 
 A launch on trade.qrdx.org never sets a freeze authority, so nobody can lock a holder's coins. By default it has no mint authority either, so the supply is fixed; you can choose to keep the right to mint (for yourself or another address), and buyers will see that. The explorer shows **Fixed supply**, **Mintable** and **Freezable** on every token page.
 
-## Advanced: extensions
+## Token standard options
 
-Tokens created with `TOKEN_DEPLOY` directly can opt into extensions when they are created: metadata, transfer fees, non-transferable (soulbound), default-frozen, a permanent delegate, pausing, and ERC-777 operators. [Native tokens](/docs/concepts/native-tokens) lists them. Tokens with a transfer fee or that cannot be transferred cannot be pooled.
+**Token standard options** on the launch form opt the token into the standard's extensions. They are chosen when the token is created and cannot be added later; buyers, wallets and the explorer see each one.
+
+| Option | What it does |
+| --- | --- |
+| Decimals | how wallets display amounts (0–18; 18 by default) |
+| Metadata | a URI and up to 16 fields (website, description, …), editable by you or locked forever |
+| Freeze authority | may freeze a holder's balance; optionally every account starts frozen until thawed (permissioned assets) |
+| Pausable | you can stop every transfer, mint and burn, and resume them |
+| Permanent delegate | may move or burn anyone's balance without permission (a regulated issuer's clawback) |
+| Default operators | up to 8 addresses that may move every holder's balance until the holder revokes them (ERC-777) |
+| Soulbound | holders can never send it |
+| Transfer fee | basis points withheld from every transfer, for you to collect; a new rate applies 100 blocks after it is set |
+| Backed by locked classical assets | an advisory flag for trading after the Doomsday Protocol |
+
+A token with a transfer fee, a soulbound token and a default-frozen token cannot be pooled, so those are created as a token only. [Native tokens](/docs/concepts/native-tokens) explains each extension.
 
 ## After launch
 

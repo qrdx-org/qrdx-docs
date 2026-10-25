@@ -29,6 +29,20 @@ There are only limit orders. A **market** order is a limit order at an aggressiv
 
 An order is accepted only if your account could carry the resulting position at initial margin (size × price ÷ leverage). Resting orders reserve their margin.
 
+### On networks with the 2026-10 trading features
+
+QRDX Trade offers these where the network's node runs them:
+
+- **Time in force**: GTC, **Post only** (refused if it would take, so it always pays the maker rate), IOC, and **FOK** (fills whole or not at all). **Hidden** orders match like any other but show nothing in the book; an **iceberg** shows part of its size at a time.
+- **Stop** tab: a stop-loss or take-profit that waits for the **mark price** and then becomes a market order (at most 10 % through the mark) or a limit at the price you give. A buy above the mark or a sell below it is a stop; the others take profit. Margin is checked when it fires.
+- **TP / SL** on an order: a take-profit and a stop-loss sized to it, placed with it; the first to fire cancels the other.
+- A **position's TP / SL** (the positions table, or a take-profit / stop-loss line drawn on the chart): closes the whole position, whatever its size when it fires.
+- **TWAP**: a size worked into the market in equal slices over a duration, each slice at most 3 % from the mark.
+- **Edit** changes an order in place; only a smaller size at the same price keeps its place in the queue.
+- **Isolated margin** can be added or taken back on an isolated position.
+- Prices have at most 5 significant figures and sizes come in whole lots of the market (its order grid); the form says when an input is off it.
+- Trading operations are **free** while your account has free actions left: the wallet's approval says so.
+
 ## 4. Watch the position
 
 Your position shows its size, entry price, **mark price**, unrealized PnL, margin and an **estimated liquidation price**: the mark at which the position falls to maintenance margin, holding your other positions at their current marks.

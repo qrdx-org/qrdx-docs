@@ -24,8 +24,16 @@ The order appears in **Open orders** once a block includes it. Several orders ca
 
 ### Managing open orders
 
-- **Edit** (the pencil) changes an order's price or size. The node has no amend operation, so the order is replaced: cancelled, then placed again at the new terms, one signature each. The new order joins the back of the queue at its price, and if the cancel lands but the new order is refused, no order is left.
-- **Cancel all** cancels every open order on the list. Each cancel is its own transaction, so the wallet asks for each; they land in order.
+- **Edit** (the pencil) changes an order's price or size. On a network with the 2026-10 trading features it changes in one step (`MODIFY_ORDER`), and a smaller size at the same price keeps its place in the queue. On an older network the order is replaced: cancelled, then placed again at the new terms, one signature each; the new order joins the back of the queue, and if the cancel lands but the new order is refused, no order is left.
+- **Cancel all** cancels every open order on the list. With the 2026-10 features it is one approval and one transaction, all or nothing; before them each cancel is its own transaction, so the wallet asks for each.
+
+### Stops, time in force and hidden orders
+
+Where the network runs the 2026-10 trading features:
+
+- The **Stop** tab places a stop-loss or take-profit that waits for the pair's **last trade** to reach its trigger, then trades as a market order (at most 10 % through the trigger) or a limit at the price you give. Its funds are locked when you place it and come back if you cancel it (the **Stops** tab).
+- Limit orders take a **time in force** (GTC, Post only, IOC, FOK), and can be **hidden** or an **iceberg**.
+- A buy can carry a **TP / SL**: one sell trigger that holds exactly what the buy bought, the first of the two to fire cancelling the other.
 
 The same works for perps orders.
 
@@ -36,7 +44,7 @@ A swap spends a fixed amount and receives whatever the best venue pays:
 - each of the pair's **pools**, and
 - the **book**, walking the bids when you sell the base asset or the asks when you buy it.
 
-The swap settles entirely with the venue that pays the most. Before you sign, the site asks the node for an exact quote and sets **minimum received** to the quote less your slippage tolerance (0.5 % by default). If the price moves past that before the block, the swap fails and nothing changes, except the small transaction fee.
+The swap settles entirely with the venue that pays the most. A pair with no market of its own is routed through up to three others; on a network with the 2026-10 features that is one swap through the whole path, delivering at least the minimum or nothing. Before you sign, the site asks the node for an exact quote and sets **minimum received** to the quote less your slippage tolerance (0.5 % by default). If the price moves past that before the block, the swap fails and nothing changes, except the small transaction fee.
 
 <Callout type="info" title="Every operation is all-or-nothing">
   A swap that would receive less than its minimum, an order you cannot afford, or a cancel of someone else's order is refused whole. The chain records the failure; your balances do not change except for the fee.
@@ -49,7 +57,8 @@ The bell next to a market's name sets a **price alert**: above or below a price 
 ## Fees
 
 - **Pool fees** depend on the pool's tier: 0.01 %, 0.05 %, 0.3 % or 1 %. 70 % go to the liquidity providers in range, 30 % to the protocol.
-- **Transaction fees** are paid in QRDX and burned: about 0.00004–0.00015 QRDX per operation, whether it succeeds or fails.
+- **Transaction fees** are paid in QRDX and burned: about 0.00004–0.00015 QRDX per operation, whether it succeeds or fails. On networks with the 2026-10 release, trading operations (orders, cancels, edits, stops, swaps) go free while your account has free actions left (10,000 to start, more as you trade; it needs 0.025 QRDX or 10 of perps equity to use them).
+- **Book fees** follow your 14-day perps volume: 0.05 % taker and 0.02 % maker at first, lower from 5M.
 
 ## Charts and data
 

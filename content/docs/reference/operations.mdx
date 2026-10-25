@@ -8,6 +8,10 @@ An exchange transaction's `op_type` is the number or the name. Amounts, sizes an
 
 **Fee** = gas × `gas_price` (at least 1 gwei = 10⁻⁹ QRDX per gas), paid in QRDX and burned. At the minimum price, 40,000 gas costs 0.00004 QRDX.
 
+<Callout title="Operations 56–83 and the free trading lane">
+They arrive with qrdx-node's 2026-10 release, from a fresh genesis. A node without them refuses them as an unknown operation type; `perp_getFeeSchedule` answering is a quick check that a node has them. On such a node the exchange's gas floor is 0.1 gwei, and a **trading operation** (an order, cancel, modify, trigger, TWAP, swap, leverage change, or a batch only of those) sent with `gas_price` 0 pays nothing while the account has free actions: `exchange_getFreeActions(address)` says whether its next one would go free, and why not.
+</Callout>
+
 ## Spot
 
 | Op | # | Params | Gas |
@@ -15,9 +19,15 @@ An exchange transaction's `op_type` is the number or the name. Amounts, sizes an
 | `CREATE_POOL` | 1 | `token0`, `token1`, `fee_tier` (100 \| 500 \| 3000 \| 10000), `pool_type` (`STANDARD` \| `SUBSIDIZED`), `initial_price` (token1 per token0 of the sorted pair), `stake_amount` (QRDX) | 150,000 |
 | `ADD_LIQUIDITY` | 2 | `pool_id` (or `token0` + `token1` [+ `fee_tier`]), `tick_lower`, `tick_upper` (multiples of the tick spacing), `amount` (the liquidity L) | 90,000 |
 | `REMOVE_LIQUIDITY` | 3 | `pool_id`, `position_id`, `amount?` (L; default all, `0` collects fees only). Owner only | 60,000 |
-| `SWAP` | 4 | `token_in`, `token_out`, `amount_in`, `min_amount_out`, `deadline?` (block time), `venue?` (`auto` \| `amm` \| `clob`), `pool_id?` | 65,000 |
-| `PLACE_ORDER` | 5 | `pair` (`tokenA:tokenB`, either order), `side` (`buy` \| `sell`), `order_type` (`limit`), `price`, `amount` (base) | 40,000 |
-| `CANCEL_ORDER` | 6 | `order_id`, `pair` | 25,000 |
+| `SWAP` | 4 | `token_in`, `token_out`, `amount_in`, `min_amount_out`, `deadline?` (block time), `venue?` (`auto` \| `amm` \| `clob`), `pool_id?`. Or `path` (`[A, B, C, …]`, up to 4 hops) in place of `token_in` / `token_out`: each hop spends what the one before bought, and the whole swap is undone short of `min_amount_out` | 65,000 a hop, + 10,000 per resting order visited |
+| `PLACE_ORDER` | 5 | `pair` (`tokenA:tokenB`, either order), `side` (`buy` \| `sell`), `order_type` (`limit` \| `market`; `stop_loss` \| `take_profit` \| `oco`, below), `price`, `amount` (base); `tif?` (`gtc` \| `ioc` \| `fok` \| `alo`), `hidden?`, `display_size?` (an iceberg), and for a buy `tp?` / `sl?` (`{trigger_price, price?}`) | 40,000 |
+| `PLACE_ORDER` (trigger) | 5 | `order_type` `stop_loss` \| `take_profit` \| `oco`, `trigger_price`, `amount`, `price?` (its limit; none: a market order at most 10 % through), an `oco`'s `tp_price`, `tp_limit?`. Judged on the pair's last order-book trade; escrowed when placed | 40,000 + `max_makers?` (default 20) × 10,000 |
+| `CANCEL_ORDER` | 6 | `order_id`, `pair` (a spot trigger's too: its escrow comes back) | 25,000 |
+| `MODIFY_ORDER` | 59 | `pair`, `order_id`, `amount` (what should be left), `price`. A smaller amount at the same price keeps the order's place | 40,000 + matching |
+| `CANCEL_ALL` | 57 | `scope?` (`all` \| `spot` \| `perps`), `market?`: every resting order, trigger and TWAP of the sender in scope | 20,000 + 5,000 each |
+| `BATCH` | 60 | `actions`: 1–20 `{op, params}` of `PLACE_ORDER`, `CANCEL_ORDER`, `MODIFY_ORDER`, `SWAP`, `PERP_DEPOSIT`, `PERP_WITHDRAW`, `PERP_SET_LEVERAGE`, `PERP_ORDER`, `PERP_CANCEL`, `PERP_TRIGGER`, `PERP_MODIFY`, `CANCEL_ALL`, `TWAP_ORDER`, `TWAP_CANCEL`, run in order, all or nothing | 10,000 + each action's |
+| `TWAP_ORDER` | 61 | `duration` (60 s – 24 h), `slices?` (default one every 30 s, at most 60), `max_slippage?` (default 3 %), `max_makers?` (per slice, default 5); perps: `market_id`, `side`, `size`, `reduce_only?`; spot: `token_in`, `token_out`, `amount_in` (escrowed) | 40,000 + slices × (10,000 + makers × 10,000), paid when placed |
+| `TWAP_CANCEL` | 62 | `twap_id` (a spot TWAP's unspent escrow comes back) | 25,000 |
 | `REMOVE_POOL` | 17 | `pool_id`. The creator, once no position remains; refunds the stake | 60,000 |
 
 Native QRDX is named `QRDX` (any casing) in place of a token address.
@@ -30,13 +40,19 @@ Native QRDX is named `QRDX` (any casing) in place of a token address.
 | `PERP_DEPOSIT` | 18 | `amount`: collateral from the wallet into the clearinghouse | 40,000 |
 | `PERP_WITHDRAW` | 19 | `amount`: at most `withdrawable` | 40,000 |
 | `PERP_SET_LEVERAGE` | 20 | `market_id`, `leverage`, `mode` (`cross` \| `isolated`) | 20,000 |
-| `PERP_ORDER` | 21 | `market_id`, `side`, `size`, `price`, `reduce_only?`, `tif?` (`gtc` default \| `ioc`) | 60,000 |
-| `PERP_CANCEL` | 22 | `market_id`, `order_id` | 25,000 |
+| `PERP_ORDER` | 21 | `market_id`, `side`, `size`, `price`, `reduce_only?`, `tif?` (`gtc` default \| `ioc` \| `fok` \| `alo`), `hidden?`, `display_size?`, `tp?` / `sl?` (`{trigger_price, limit_price?, max_makers?}`: reduce-only triggers sized to the order, the first to fire cancelling the other) | 60,000 (+ each attached trigger's) |
+| `PERP_CANCEL` | 22 | `market_id`, `order_id` (a trigger's too) | 25,000 |
+| `PERP_TRIGGER` | 56 | `market_id`, `side`, `kind` (`sl` \| `tp`), `trigger_price` (on the mark), `size` or `position: true` (the whole position, whatever it is when it fires), `limit_price?`, `reduce_only?`, `max_makers?` (1–100, default 20) | 40,000 + `max_makers` × 10,000 |
+| `PERP_MODIFY` | 58 | `market_id`, `order_id`, `size` (what should be left), `price`; for a trigger `trigger_price`, `limit_price`, `size` | 60,000 + matching |
+| `PERP_ISOLATED_MARGIN` | 76 | `market_id`, `amount` (negative takes margin back, keeping the initial margin) | 30,000 |
+| `SCHEDULE_CANCEL` | 77 | `time` (block time, at least 5 s ahead): cancel every order, trigger and TWAP then; no `time` clears it | 20,000 |
 | `VAULT_DEPOSIT` | 23 | `amount`: free collateral into the backstop vault, for shares | 40,000 |
 | `VAULT_WITHDRAW` | 24 | `shares`, after the lockup | 40,000 |
 | `ORACLE_VOTE` | 25 | `prices` (`{"BTC": "65000.5", …}`). Validators only | 30,000 |
 
 An order's id is the first 16 characters of its transaction hash; the receipt returns it too.
+
+On nodes from the 2026-10 release a market has an **order grid** (`sz_decimals` in `perp_getMarket`): sizes in whole lots of 10^-sz_decimals, and prices of at most 5 significant figures and 6 − sz_decimals decimals (an integer always fits). An order, trigger or modify off the grid is refused. A buy stop and a sell take-profit fire as the mark rises to the trigger; a sell stop and a buy take-profit as it falls. Validator-priced markets are listed by governance (`list_market`); `CREATE_MARKET` lists a bonded deployer's `dex:ASSET` market, with at least 10,000 of `liquidity` for its book.
 
 ## Native tokens
 
@@ -79,6 +95,8 @@ An order's id is the first 16 characters of its transaction hash; the receipt re
 | `STAKE_UNDELEGATE` | 54 | `validator`, `shares` (or `"all"`, which also refunds what is warming up) | a delegator | 40,000 |
 | `STAKE_SET_COMMISSION` | 55 | `commission_bps` (0–10,000; from the next epoch) | a validator | 25,000 |
 
+From the 2026-10 release a validator stakes at least 1,000 QRDX and a delegation is at least 0.01 QRDX.
+
 [Consensus](/docs/concepts/consensus) explains the validator lifecycle and delegation pools; [Staking and delegation](/docs/guides/staking) walks through delegating.
 
 ## Governance
@@ -99,6 +117,43 @@ An order's id is the first 16 characters of its transaction hash; the receipt re
 | `BRIDGE_WITHDRAW` | 52 | `token_address` (a bridged token), `amount`, `to` (the recipient on the source chain, `0x…`) | any holder | 60,000 |
 
 Deposits are not an operation: validators attest them in their `ORACLE_VOTE`s. [Bridge](/docs/guides/bridge) explains both directions.
+
+## Acting for an account
+
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `AGENT_APPROVE` | 63 | `agent` (a `0xPQ` key), `valid_until?` (block time; 0: until revoked), `name?`, `max_notional_per_day?`. The agent may sign trading operations, never withdrawals or transfers | the account | 30,000 |
+| `AGENT_REVOKE` | 64 | `agent` | the account or the agent | 20,000 |
+| `SUBACCOUNT_CREATE` | 65 | `name?`: a `0xSUBA…` account the master signs for | anyone | 50,000 |
+| `SUBACCOUNT_TRANSFER` | 66 | `subaccount`, `asset`, `amount`, `direction` (`to_sub` \| `from_sub`) | the master | 40,000 |
+| `VAULT_CREATE` | 67 | `amount` (at least 100), `profit_share?` (default 10 %, at most 50 %), `name`: a copy-trading vault the leader trades | anyone | 100,000 |
+| `REFERRAL_REGISTER` / `REFERRAL_JOIN` | 68 / 69 | `code` (3–16 of a-z, 0-9, _) | anyone (join once, before 10,000 of volume) | 30,000 |
+| `APPROVE_BUILDER_FEE` | 78 | `builder`, `max_fee_rate` (0 revokes; at most 0.1 % perps, 1 % spot) | the account | 25,000 |
+| `ACCOUNT_POLICY` | 70 | `action`: `add_controller` / `remove_controller` (`controller`), `own_key` (`enabled`), `delay` (`seconds`), `guardians` (`guardians`, `threshold`, `recovery_delay`), `cancel` (`change_id`). Signed by the own key, a change waits out the delay | the account or a controller (as `signer`) | 40,000 |
+| `ACCOUNT_RECOVER` | 75 | `account`, `new_controller` (`""` withdraws the backing) | a guardian | 40,000 |
+
+A transaction signed by someone other than its `sender` (an agent, a controller, a sub-account's master, a vault's leader) carries `signer`, which is appended to the signed bytes as `\x00signer:<address>`, and takes its nonce from the `sender|signer` lane (`exchange_getNonce(address, signer)`).
+
+## Names (QNS)
+
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `QNS_REGISTER` | 71 | `name` (`label.qrdx`, 3–59 of a-z, 0-9, -), `years?` (1–10), `target?` (default the sender) | anyone | 80,000 + the price |
+| `QNS_RENEW` | 72 | `name`, `years` | anyone | 40,000 + the price |
+| `QNS_SET_RECORD` | 73 | `name`, `key` (`address` or a text record), `value` | the name's owner | 30,000 |
+| `QNS_SET_PRIMARY` | 74 | `name` (`""` clears): the sender's reverse record | anyone | 25,000 |
+
+A year costs 0.0125 QRDX for 5 or more characters, 32× that for 4 and 128× for 3 (`qns_price(years)`), paid to the treasury. A name is a native NFT; `qns_resolve`, `qns_reverse`, `qns_getName` and `qns_namesOf` read them.
+
+## Deployer markets and tickers
+
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `DEPLOYER_BOND` | 79 | `amount`, `dex` (the first bond names the namespace: 1–8 lowercase letters and digits) | anyone | 40,000 |
+| `DEPLOYER_UNBOND` | 80 | `amount`, or `claim: true` 14 days later | a deployer (keeping 1,250 QRDX while it runs markets) | 40,000 |
+| `DEPLOYER_SET_ORACLE` | 81 | `market_id`, `price` | the market's deployer (or its agent) | 25,000 |
+| `DEPLOYER_HALT` | 82 | `market_id`: settles it for good at its oracle price | the market's deployer | 200,000 + settling |
+| `TICKER_CLAIM` | 83 | `token_address`, `max_price?`: the token's symbol as its unique ticker, at the Dutch auction's price (250 QRDX falling to 25), burned | the token's creator | 50,000 |
 
 ## Retired
 

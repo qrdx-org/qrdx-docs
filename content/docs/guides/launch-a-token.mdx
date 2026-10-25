@@ -13,7 +13,7 @@ A token on QRDX is not a contract. It is a registry entry (name, symbol, supply,
 1. **Name, symbol and supply.** Symbols are not unique; the token is identified by its address, which is fixed before the block includes it.
 2. **How much you keep.** The rest goes on the **launch curve**.
 3. **Launch price and curve.** The curve is a concentrated-liquidity position holding only the new token, from the launch price up to a multiple of it. Buyers swap the quote asset in and walk the price up the range, which behaves like a bonding curve but is an ordinary pool that anyone can trade on, add to or route through.
-4. **Pool cost.** Stake 10,000 QRDX (refunded if the pool is later removed) or burn 5,000 QRDX (the pool is permanent).
+4. **Pool cost.** Stake QRDX (refunded if the pool is later removed) or burn it (the pool is permanent). The form shows what your network charges: 10,000 to stake or 5,000 to burn before qrdx-node's 2026-10 release, 25 or 10 from it.
 
 The wallet asks you to approve the token, the pool and the curve. They can all land in the same block.
 

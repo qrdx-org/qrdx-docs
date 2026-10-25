@@ -26,7 +26,7 @@ Level 2 gives each price level's `amount`, running `total` (base) and `notional_
 
 Each trade has a sequence number (`seq`), `price`, `amount`, `quote_amount`, the taker's `side`, the `venue` (`clob`, `amm` or `perp`), `maker`, `taker`, `pool_id` and `tx_hash`. Pass `since` (a `seq`) to get only newer trades; `last_seq` is the newest. Or subscribe to `trades:<market>` on a [stream](/docs/build/streams).
 
-<RpcPlayground method="market_getTrades" params={["QRDX:0x0886aa41d05c4be1ad6c91b728d104fee55a713a", 5]} />
+<RpcPlayground method="market_getTrades" params={["QRDX:0x801ae63d236d7a4ea69868a9d7be5d27a09e5580", 5]} />
 
 ## Candles
 

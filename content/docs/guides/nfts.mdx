@@ -23,6 +23,8 @@ The **NFTs** tab of the QRDX Wallet lists the NFTs your account owns on the netw
 
 Nothing is held in escrow and the contract has no owner or fee. Every call is run against the latest block before the wallet signs it, so one that would fail says why instead of costing its fee.
 
+A network without the market contract (testnet after a reset) lists collections and NFTs read-only. Anyone can open trading on testnet: **Deploy the market contract** on the NFTs page deploys it from your account (about 700,000 gas), and once its code checks out on chain it becomes the network's market for everyone.
+
 ## Metadata
 
 A collection and each NFT carry a `uri`. Wallets read it as JSON in the common format: `name`, `description`, `image`, and `attributes` (`trait_type` and `value`). `https://`, `ipfs://` and `data:` URIs are all read. Point `image` at a stable location: the chain stores the URI, not the file.

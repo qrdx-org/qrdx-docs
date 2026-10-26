@@ -43,6 +43,15 @@ QRDX Trade offers these where the network's node runs them:
 - Prices have at most 5 significant figures and sizes come in whole lots of the market (its order grid); the form says when an input is off it.
 - Trading operations are **free** while your account has free actions left: the wallet's approval says so.
 
+### One-click trading, sub-accounts and vaults
+
+- **One-click trading** (the button above the order form): the wallet approves a trading key kept in this browser, once, for 7 days. Orders, cancels, edits, stops and TWAPs are then signed in the browser, with no wallet window each. The key can trade your account but never withdraw or transfer from it; turning one-click off revokes it on chain, and **Portfolio → Trading keys** lists and revokes every key.
+- **Sub-accounts** (**Portfolio → Sub-accounts**): separate balances, margin and orders under the same wallet, up to 20. Move funds in and out, then pick one in **Trading account** above the order form: the forms show and trade its balances and positions, and the wallet signs for it.
+- **Vaults** (the **Vaults** page): deposit perps collateral with a trader for shares at the vault's value; the leader trades it and keeps a share of depositors' gains. Start your own with at least 100, then trade it by choosing it as the trading account.
+- **Fees and referrals** (**Portfolio**): your 14-day volume and rates, a referral code to share (you earn 10 % of referred fees), or one to use (4 % off).
+- **Dead man's switch** (**Portfolio**): cancel every order, trigger and TWAP at a time unless you renew it.
+- **Leaderboard**: traders by realized profit or volume, from the node's trading history; **Portfolio → Trade history** lists your own fills and order events.
+
 ## 4. Watch the position
 
 Your position shows its size, entry price, **mark price**, unrealized PnL, margin and an **estimated liquidation price**: the mark at which the position falls to maintenance margin, holding your other positions at their current marks.
@@ -76,6 +85,10 @@ Anyone can deposit free collateral into the vault for shares at its net asset va
 ## Oracle staleness
 
 If a market's oracle price has not updated for 5 minutes, it accepts only reduce-only orders until it does. Liquidations keep running.
+
+## Listing a market
+
+On networks from the 2026-10 release, markets the validators price are listed by governance. Anyone else can become a **deployer**: bond 1,250 QRDX under a namespace (**Perps → New market**), then list `namespace:ASSET` markets with a starting price, at least 10,000 of perps collateral to seed the book's liquidity vault, and the 25 QRDX listing fee. The deployer keeps the market's oracle price up to date itself (at most 1 % a second), takes up to half of what the protocol keeps on its fees, and can settle it for good. Its markets take isolated margin only; validators can freeze one that misprices, and governance can slash the bond.
 
 [The perpetuals engine](/docs/concepts/perpetuals) has the full model.
 

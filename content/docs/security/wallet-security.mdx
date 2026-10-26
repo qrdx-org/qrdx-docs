@@ -41,6 +41,18 @@ passkey  ── WebAuthn PRF ── HKDF-SHA256 ──▶ wraps the data key   (
 - Before signing, the wallet checks that the node serves the chain you selected; a mismatch blocks signing until you explicitly trust it.
 - Recipients on QRDX are resolved to their 20-byte account id, so a `0xPQ` address can never be truncated into a wrong one. Protocol accounts (`0xPOOL…`, `0xCLOB…`, `0xPERP…`) are refused as recipients.
 
+## Account control
+
+On networks from qrdx-node's 2026-10 release, who may sign for an account is part of the chain's state (**Settings → Account control** in the wallet):
+
+- **Controllers.** Bind up to 5 other wallets, or a multisig, that may sign anything for the account. A good setup binds a cold wallet, or a 2-of-3 multisig of your devices, to the wallet you use every day.
+- **A delay.** Changes your everyday key signs (binding a controller, turning a key off, naming guardians) then wait out the delay in the open. A controller can cancel one, so a stolen key's attempt to take the account over does not go through quietly.
+- **Turning the key off.** With a controller bound, turn the everyday key off and it signs nothing at all, on the exchange or in the EVM; only the controllers move the account's funds.
+- **Recovery guardians.** Name up to 7 accounts and how many must agree. If every key is lost, that many guardians together can hand the account to a new controller after the recovery delay (7 days by default), unless you or a controller cancel first.
+- **Trading keys.** Sites with one-click trading add an agent key that may trade, never withdraw. The page lists each with its expiry and revokes it.
+
+A controller has full authority over the account: bind only wallets you control.
+
 ## Known limits
 
 - **JavaScript memory**: wiping keys is best effort; a compromised browser or OS can read keys while the wallet is unlocked.

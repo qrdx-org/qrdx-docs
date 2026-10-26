@@ -39,6 +39,12 @@ A read-only API over the native exchange. It serves trade.qrdx.org and anyone el
 | `GET /assets[?all=1]`, `GET /assets/{asset}` | verified assets, every token, one asset with supply, authorities and its creator's profile |
 | `GET /launches?limit=` | recent token launches |
 | `GET /status` | the network's node: height, latency |
+| `GET /features` | what the network's node runs (the 2026-10 trading features, its history database) and what the protocol charges |
+| `GET /leaderboard?window=&metric=` | perps traders by realized profit or volume |
+| `GET /vaults`, `GET /vaults/{vault}?holder=` | user vaults and markets' liquidity vaults |
+| `GET /deployers/{address-or-namespace}` | a perp market deployer's bond and markets |
+| `GET /tickers` | the unique-ticker auction's price |
+| `GET /nfts/market`, `POST /nfts/market { address }` | the NFT market contract, and registering a deployment (checked on chain) |
 
 ## Prices
 
@@ -54,6 +60,8 @@ A read-only API over the native exchange. It serves trade.qrdx.org and anyone el
 | --- | --- |
 | `GET /accounts/{address}[?tokens=0x…,0x…]` | balances (with what is in orders), spot orders oriented to their markets, liquidity positions, the perps account, the exchange nonce |
 | `GET /accounts/{address}/pnl` | totals, a cumulative realized PnL series, and PnL per market |
+| `GET /accounts/{address}/control` | its trading agents, sub-accounts, the vaults it leads, its fee tier and referral |
+| `GET /accounts/{address}/history?kind=trades\|orders&cursor=` | its fills or order events from the node's trading history |
 | `GET /receipts/{txHash}` | an exchange receipt, `404` while pending |
 
 ## The asset object

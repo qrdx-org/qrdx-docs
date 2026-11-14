@@ -14,7 +14,7 @@ All three execute only when a block includes them. Receipts tell you the outcome
 
 ## EVM transactions
 
-QRDX runs an EVM. It accepts **legacy** (pre-EIP-1559) envelopes and the post-quantum type `0x51`; other typed envelopes are refused. Wallets fold EIP-1559 fee fields into a legacy `gasPrice`.
+QRDX runs an EVM. It accepts legacy, EIP-2930 and EIP-1559 envelopes and the post-quantum type `0x51`. The gas price is at least 1 gwei, and the suggested tip is 0.
 
 **Type `0x51`** puts an ML-DSA-65 signature in an EIP-2718 envelope:
 
@@ -30,8 +30,8 @@ There is no sender field: the sender is the account id of the embedded public ke
 A JSON object with an operation, parameters, gas, the public key and an ML-DSA-65 signature. [Exchange transactions](/docs/build/exchange-transactions) shows how to build and sign one.
 
 - **Nonce.** Each account has an exchange nonce, separate from its EVM nonce. An executed transaction uses its nonce whether it succeeds or fails; one refused at admission does not.
-- **Gas.** Each operation has a fixed gas cost (20,000–150,000, listed in [Exchange operations](/docs/reference/operations)), priced at `gas_price` wei per gas, at least 1 gwei.
-- **Fee.** Gas × price, paid in QRDX and **burned**, whether the operation succeeds or fails: about 0.00004–0.00015 QRDX at the minimum price.
+- **Gas.** Each operation has a fixed gas cost (20,000–150,000, listed in [Exchange operations](/docs/reference/operations)), priced at `gas_price` wei per gas, at least 0.1 gwei (`exchange_gasPrice`).
+- **Fee.** Gas × price, paid in QRDX and **burned**, whether the operation succeeds or fails: about 0.000004–0.000015 QRDX at the minimum price. An account keeps a [fee reserve](/docs/reference/operations#the-fee-reserve) of 1 QRDX that only fees may spend.
 - **Any node.** Exchange transactions are gossiped, so the node you submit to does not need to be a validator.
 
 ## Finality

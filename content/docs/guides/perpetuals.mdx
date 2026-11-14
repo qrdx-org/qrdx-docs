@@ -18,7 +18,7 @@ On [trade.qrdx.org/perps](https://trade.qrdx.org/perps), choose **Deposit** and 
 
 ## 2. Choose leverage and margin mode
 
-Leverage is set per market (up to the market's maximum, 20× by default):
+Leverage is set per market (up to the market's maximum: 20× by default, 10× on token perpetuals):
 
 - **Cross** (default): one collateral balance backs all your cross positions. A profit in one market supports a loss in another.
 - **Isolated**: the position has its own margin, moved out of your cross collateral. If it is liquidated, only that margin is at risk.
@@ -88,7 +88,7 @@ If a market's oracle price has not updated for 5 minutes, it accepts only reduce
 
 ## Listing a market
 
-On networks from the 2026-10 release, markets the validators price are listed by governance. Anyone else can become a **deployer**: bond 1,250 QRDX under a namespace (**Perps → New market**), then list `namespace:ASSET` markets with a starting price, at least 10,000 of perps collateral to seed the book's liquidity vault, and the 25 QRDX listing fee. The deployer keeps the market's oracle price up to date itself (at most 1 % a second), takes up to half of what the protocol keeps on its fees, and can settle it for good. Its markets take isolated margin only; validators can freeze one that misprices, and governance can slash the bond.
+The markets validators price (BTC, ETH, SOL) exist from genesis, and governance lists others. Anyone can list a **token perpetual** on a token that trades on QRDX (**Perps → New market**): name the token by its address, seed the market's liquidity vault with at least 10,000 of perps collateral, and pay the 25 QRDX listing fee, which is burned. The liquidity you seed is locked for 30 days. There is one market per token, and nobody sets its price: each block it reads the token's own pools (a 10-minute average over the deepest path to the settlement asset), so the token needs pools holding at least 10,000 of depth, with ten minutes of history, before it can be listed. While the depth is below that, the market takes only reduce-only orders. Token perpetuals take isolated margin only, up to 10× leverage, and their open interest is capped at 10× the pools' depth.
 
 [The perpetuals engine](/docs/concepts/perpetuals) has the full model.
 

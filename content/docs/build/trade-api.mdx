@@ -42,7 +42,7 @@ A read-only API over the native exchange. It serves trade.qrdx.org and anyone el
 | `GET /features` | what the network's node runs (the 2026-10 trading features, its history database) and what the protocol charges |
 | `GET /leaderboard?window=&metric=` | perps traders by realized profit or volume |
 | `GET /vaults`, `GET /vaults/{vault}?holder=` | user vaults and markets' liquidity vaults |
-| `GET /deployers/{address-or-namespace}` | a perp market deployer's bond and markets |
+| `GET /perps/check?token=` | whether a token can have a perpetual listed: its pools' depth and price history, the fee and the minimum liquidity |
 | `GET /tickers` | the unique-ticker auction's price |
 | `GET /nfts/market`, `POST /nfts/market { address }` | the NFT market contract, and registering a deployment (checked on chain) |
 

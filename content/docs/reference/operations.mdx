@@ -6,10 +6,10 @@ icon: ListOrdered
 
 An exchange transaction's `op_type` is the number or the name. Amounts, sizes and prices are decimal strings with at most 18 decimal places. Every operation is all-or-nothing: one that cannot execute is refused whole, changes nothing, and still pays its gas. [Exchange transactions](/docs/build/exchange-transactions) explains the envelope and signing.
 
-**Fee** = gas × `gas_price` (at least 1 gwei = 10⁻⁹ QRDX per gas), paid in QRDX and burned. At the minimum price, 40,000 gas costs 0.00004 QRDX.
+**Fee** = gas × `gas_price` (at least 0.1 gwei = 10⁻¹⁰ QRDX per gas; `exchange_gasPrice` returns the floor), paid in QRDX and burned. At the minimum price, 40,000 gas costs 0.000004 QRDX.
 
-<Callout title="Operations 56–83 and the free trading lane">
-They arrive with qrdx-node's 2026-10 release, from a fresh genesis. A node without them refuses them as an unknown operation type; `perp_getFeeSchedule` answering is a quick check that a node has them. On such a node the exchange's gas floor is 0.1 gwei, and a **trading operation** (an order, cancel, modify, trigger, TWAP, swap, leverage change, or a batch only of those) sent with `gas_price` 0 pays nothing while the account has free actions: `exchange_getFreeActions(address)` says whether its next one would go free, and why not.
+<Callout title="Operations 56–86 and the free trading lane">
+They arrive with qrdx-node 3.0.0 (the 2026-10 release), from a fresh genesis. A node without them refuses them as an unknown operation type; `perp_getFeeSchedule` answering is a quick check that a node has them. On such a node the exchange's gas floor is 0.1 gwei, and a **trading operation** (an order, cancel, modify, trigger, TWAP, swap, leverage change, or a batch only of those) sent with `gas_price` 0 pays nothing while the account has free actions: `exchange_getFreeActions(address)` says whether its next one would go free, and why not.
 </Callout>
 
 ## Spot
@@ -36,7 +36,7 @@ Native QRDX is named `QRDX` (any casing) in place of a token address.
 
 | Op | # | Params | Gas |
 | --- | --- | --- | --- |
-| `CREATE_MARKET` | 12 | `base_token` (e.g. `BTC`), `max_leverage?` (default 20) | 100,000 |
+| `CREATE_MARKET` | 12 | a token perpetual: `token` (the token's **address**, or `QRDX`; a symbol is refused), `liquidity` (at least 10,000 of perps collateral for the market's liquidity vault), `max_leverage?` (default and at most 10), `sz_decimals?`, `liquidity_profit_share?` | 100,000 |
 | `PERP_DEPOSIT` | 18 | `amount`: collateral from the wallet into the clearinghouse | 40,000 |
 | `PERP_WITHDRAW` | 19 | `amount`: at most `withdrawable` | 40,000 |
 | `PERP_SET_LEVERAGE` | 20 | `market_id`, `leverage`, `mode` (`cross` \| `isolated`) | 20,000 |
@@ -52,7 +52,7 @@ Native QRDX is named `QRDX` (any casing) in place of a token address.
 
 An order's id is the first 16 characters of its transaction hash; the receipt returns it too.
 
-On nodes from the 2026-10 release a market has an **order grid** (`sz_decimals` in `perp_getMarket`): sizes in whole lots of 10^-sz_decimals, and prices of at most 5 significant figures and 6 − sz_decimals decimals (an integer always fits). An order, trigger or modify off the grid is refused. A buy stop and a sell take-profit fire as the mark rises to the trigger; a sell stop and a buy take-profit as it falls. Validator-priced markets are listed by governance (`list_market`); `CREATE_MARKET` lists a bonded deployer's `dex:ASSET` market, with at least 10,000 of `liquidity` for its book.
+On nodes from the 2026-10 release a market has an **order grid** (`sz_decimals` in `perp_getMarket`): sizes in whole lots of 10^-sz_decimals, and prices of at most 5 significant figures and 6 − sz_decimals decimals (an integer always fits). An order, trigger or modify off the grid is refused. A buy stop and a sell take-profit fire as the mark rises to the trigger; a sell stop and a buy take-profit as it falls. Validator-priced markets (`BTC`, `ETH`, `SOL`) exist from genesis and others are listed by governance (`list_market`). `CREATE_MARKET` lists a **token perpetual**, `<token address>-USD-PERP`: one per token, priced from the token's own spot pools (a 10-minute TWAP over the deepest path to the settlement asset, which needs 10,000 of depth), isolated margin only, with open interest capped at 10× that depth. The 25 QRDX listing fee is burned.
 
 ## Native tokens
 
@@ -145,16 +145,26 @@ A transaction signed by someone other than its `sender` (an agent, a controller,
 
 A year costs 0.0125 QRDX for 5 or more characters, 32× that for 4 and 128× for 3 (`qns_price(years)`), paid to the treasury. A name is a native NFT; `qns_resolve`, `qns_reverse`, `qns_getName` and `qns_namesOf` read them.
 
-## Deployer markets and tickers
+## Tickers
 
 | Op | # | Params | Who | Gas |
 | --- | --- | --- | --- | --- |
-| `DEPLOYER_BOND` | 79 | `amount`, `dex` (the first bond names the namespace: 1–8 lowercase letters and digits) | anyone | 40,000 |
-| `DEPLOYER_UNBOND` | 80 | `amount`, or `claim: true` 14 days later | a deployer (keeping 1,250 QRDX while it runs markets) | 40,000 |
-| `DEPLOYER_SET_ORACLE` | 81 | `market_id`, `price` | the market's deployer (or its agent) | 25,000 |
-| `DEPLOYER_HALT` | 82 | `market_id`: settles it for good at its oracle price | the market's deployer | 200,000 + settling |
 | `TICKER_CLAIM` | 83 | `token_address`, `max_price?`: the token's symbol as its unique ticker, at the Dutch auction's price (250 QRDX falling to 25), burned | the token's creator | 50,000 |
+
+## Proofs from other chains
+
+Sent by anyone; the proofs are checked against a head the validators attested ([bridge_getHeads](/docs/reference/json-rpc)).
+
+| Op | # | Params | Gas |
+| --- | --- | --- | --- |
+| `BRIDGE_PROVE_DEPOSIT` | 84 | `deposit`, `height`, `account_proof`, `storage_proof`: mints a bridge deposit proven in the bridge contract's storage | 300,000 |
+| `MIGRATION_CLAIM` | 85 | `chain`, `account`, `successor`, `time`, `height`, `account_proof`, `successor_proof`, `time_proof`: binds a 0x account to the post-quantum successor it registered on another chain | 300,000 |
+| `DOOMSDAY_PROVE` | 86 | `chain`, `height`, `account_proof`: proof that a quantum canary's key has signed, which triggers the Doomsday Protocol | 200,000 |
+
+## The fee reserve
+
+From node 3.0.0 a block's exchange operations run one block after they are included, so the node keeps each account able to pay for what it has already signed: within a block, nothing but fees takes an account below 1 QRDX (`FEE_RESERVE_QRDX`), or below what it held as the block began if that was less. An operation that would is refused with `would keep less than its fee reserve`. An account's own transaction may spend through the reserve by signing `spend_reserve: true` in its params; EVM transactions are not held to it.
 
 ## Retired
 
-Operations 7–10 (`OPEN_POSITION`, `CLOSE_POSITION`, `PARTIAL_CLOSE`, `ADD_MARGIN`) belonged to an earlier perpetuals engine and are refused; use `PERP_*`. Operation 11, `UPDATE_ORACLE`, sets an oracle price from a configured reporter on development networks only; public networks configure none, and prices come from validators' `ORACLE_VOTE`s.
+Operations 7–10 (`OPEN_POSITION`, `CLOSE_POSITION`, `PARTIAL_CLOSE`, `ADD_MARGIN`) belonged to an earlier perpetuals engine and operation 11 (`UPDATE_ORACLE`) to a configured price reporter; prices come from validators' `ORACLE_VOTE`s and, for token perpetuals, the token's pools. Operations 79–82 (`DEPLOYER_BOND`, `DEPLOYER_UNBOND`, `DEPLOYER_SET_ORACLE`, `DEPLOYER_HALT`) were deployer markets, whose deployer set the price; node 3.0.0 replaced them with token perpetuals. All are refused.

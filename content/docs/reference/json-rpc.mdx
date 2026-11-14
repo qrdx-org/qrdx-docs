@@ -6,11 +6,11 @@ icon: Braces
 
 A node serves JSON-RPC 2.0 at `POST /rpc` (testnet: `https://test.qrdx.org/rpc`). This list is generated from the node's source and every method on it answered on testnet. Parameters marked `?` are optional. Amounts and prices are decimal strings.
 
-<Callout type="info">Peer-to-peer methods (`p2p_*`, `dht_*`) are for nodes talking to each other and are not listed. The bridge's Doomsday reads (`bridge_getDoomsdayStatus`, `bridge_getCanaryInfo`, …) and the `validator_*` namespace are not enabled on testnet.</Callout>
+<Callout type="info">Peer-to-peer methods (`p2p_*`, `dht_*`) are for nodes talking to each other and are not listed. The `validator_*` namespace is not enabled on testnet.</Callout>
 
 ## eth
 
-Ethereum-compatible methods. Addresses may be `0x…` or `0xPQ…` (resolved to the account id). Only legacy (pre-EIP-1559) and type-`0x51` raw transactions are accepted.
+Ethereum-compatible methods. Addresses may be `0x…` or `0xPQ…` (resolved to the account id). Legacy, EIP-2930, EIP-1559 and type-`0x51` raw transactions are accepted.
 
 | Method | Params | |
 | --- | --- | --- |
@@ -101,6 +101,9 @@ The consensus bridge's ledger ([Bridge](/docs/guides/bridge)).
 | `bridge_getAssets` | — | The bridged assets: `symbol`, `chain` (source chain id), `source_token`, `decimals`, `token_address` (on QRDX), `supply` here, `mint_authority`. |
 | `bridge_getDeposit` | `deposit_id` (`chain:txhash:logindex`) | `minted`, and the versions of the deposit validators have attested so far (`pending`: the deposit, its voters, since which block). |
 | `bridge_getWithdrawals` | `from_id?` (1), `limit?` (100, at most 1000) | Withdrawals in id order: `id`, `chain`, `token`, `to`, `amount`, `from`, `height`, `tx_hash`. |
+| `bridge_getHeads` | `chain` (source chain id) | The source chain's finalized heads the validators attested (the last 64): height, hash and state root. A deposit is minted by proving it against one (`BRIDGE_PROVE_DEPOSIT`). |
+| `bridge_getGuardrails` | — | `deposit_window`, `deposit_max_future`, `mint_period`, `mint_limits` and `minted_by_day` per asset, `mint_paused`, and `doomsday`. |
+| `bridge_getDoomsday` | — | `triggered` (`{time, height, cause}` once the Doomsday Protocol has triggered, else `null`) and `canaries` (`{chain: address}`). |
 
 <RpcPlayground method="bridge_getAssets" />
 

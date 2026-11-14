@@ -66,7 +66,7 @@ The [method reference](/docs/reference/json-rpc) lists all of them.
 Standard tools (ethers, viem, web3.py) work for reads and classic transactions. Differences:
 
 - `eth_getBalance`, `eth_getTransactionCount` and `eth_getCode` also accept `0xPQ…` addresses, resolved to the account id.
-- Only legacy and type-`0x51` raw transactions are accepted; send EIP-1559 fees as a legacy `gasPrice`.
+- Legacy, EIP-2930, EIP-1559 and type-`0x51` raw transactions are accepted (node 3.0.0). The suggested priority fee is 0.
 - Native tokens are ERC-20s at their addresses, so `eth_call` to `balanceOf` works.
 
 <RpcPlayground method="eth_getBalance" params={["0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc", "latest"]} note="Balances are hex wei (1 QRDX = 10¹⁸ wei). A 0xPQ address resolves to its account id." />

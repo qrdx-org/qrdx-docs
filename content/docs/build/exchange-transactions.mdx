@@ -13,7 +13,7 @@ Every operation on the native exchange and native tokens is an **exchange transa
   "nonce": 4,                        // the sender's next EXCHANGE nonce
   "params": { "pair": "QRDX:0xe13e…", "side": "buy", "order_type": "limit", "price": "0.5", "amount": "10" },
   "gas_limit": 100000,
-  "gas_price": "1000000000",         // wei per gas, at least exchange_gasPrice (1 gwei)
+  "gas_price": "100000000",          // wei per gas, at least exchange_gasPrice (0.1 gwei)
   "public_key": "<hex>",             // must derive to sender
   "signature": "<hex>"               // ML-DSA-65 over the signing bytes
 }

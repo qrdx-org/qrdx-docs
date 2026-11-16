@@ -13,7 +13,9 @@ icon: Search
 | Home | height, finalized epoch, block times, validators, activity over 24 hours, every market, latest blocks and transactions |
 | Tokens | every native token with its price, 24-hour change and sparkline, market cap, volume and supply |
 | Token (`/address/<token>`) | price chart with volume, supply and authorities, every market and pool it trades in, recent trades |
-| Account (`/address/<address>`) | QRDX and token balances in USD, 30 days of activity, the full transaction history, open orders, liquidity positions, perps, validator details; its primary name and the names it holds, and who may sign for it (controllers, a multisig's threshold, trading agents) where the node reports them |
+| Account (`/address/<address>`) | QRDX and token balances in USD, 30 days of activity, the full transaction history, open orders, liquidity positions, perps, validator details; its primary name and the names it holds, who may sign for it (controllers, a multisig's threshold, trading agents) where the node reports them, and the sub-accounts, vaults and accounts it acts for |
+| Protocol account (`/address/0xSUBA…`, `0xUVLT…`, `0xPOOL…`, …) | the account like any other, plus a panel for what it is: a sub-account's master and number, a vault's leader, value, shares and positions, a pool's pair, price and liquidity, a book's best bid and ask, a multisig's members and threshold |
+| Addresses | the rich list, system and known wallets, and a **Protocol Accounts** tab: pools' reserves, order books' escrow, perps collateral, vaults and the protocol's escrows |
 | Transaction | an exchange transaction's parameters, result, fills and every account it touched |
 | Validators, Network | the validator set; node health and streams |
 | Governance | proposals with their votes against the threshold, deadlines, vetoes and parameters; **Copy link** on a proposal shares it |
@@ -21,6 +23,8 @@ icon: Search
 | Bridge | bridged assets and their supply here, withdrawals newest first, and a deposit's status by id |
 
 Validator price votes (`ORACLE_VOTE`) are most of testnet's transactions; history tables hide them unless you tick **Validator votes**. On an account page, **CSV** downloads its transaction history with the current filters (up to the newest 10,000 rows).
+
+Every address is a link, protocol addresses included; see [Accounts](/docs/concepts/accounts#protocol-accounts) for what each prefix holds.
 
 Links from QRDX Trade name the network (`?network=testnet`), so they open on the right chain.
 

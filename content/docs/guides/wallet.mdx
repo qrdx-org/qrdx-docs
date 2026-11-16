@@ -8,7 +8,7 @@ QRDX Wallet holds your keys and signs everything you do on QRDX. It runs in thre
 
 | | Browser extension | iPhone app | Web app |
 | --- | --- | --- | --- |
-| Install | Chrome Web Store / Firefox Add-ons, via [wallet.qrdx.org](https://wallet.qrdx.org) | Safari → **Share → Add to Home Screen** | Open [wallet.qrdx.org/wallet](https://wallet.qrdx.org/wallet) |
+| Install | download from [wallet.qrdx.org](https://wallet.qrdx.org) and load it (below) | Safari → **Share → Add to Home Screen** | Open [wallet.qrdx.org/wallet](https://wallet.qrdx.org/wallet) |
 | Sites connect by | the injected provider (automatic) | QR code (QRDX Connect) | QR code (QRDX Connect) |
 | Biometric unlock | passkey, where the browser supports it | Face ID / Touch ID (iOS 18+) | passkey, where supported |
 | Stays unlocked | until auto-lock or the browser closes | locks 30 s after you leave the app (adjustable) | locks on reload |
@@ -17,6 +17,27 @@ QRDX Wallet holds your keys and signs everything you do on QRDX. It runs in thre
 <Callout type="warn" title="Install the iPhone app from Safari">
   Safari deletes the storage of websites you have not visited for seven days. An app added to the home screen is exempt. Whatever you use, your recovery phrase is the real backup.
 </Callout>
+
+### Installing the extension
+
+The extension is not in the browser stores yet. [wallet.qrdx.org](https://wallet.qrdx.org) links to the latest build of `main` for each browser, with a `SHA256SUMS` file to check it against ([the release](https://github.com/qrdx-org/qrdx-wallet/releases/tag/extension)).
+
+<Tabs items={['Chrome, Brave, Edge', 'Firefox']}>
+<Tab value="Chrome, Brave, Edge">
+
+1. Download `qrdx-wallet-chrome.zip` and unzip it.
+2. Open `chrome://extensions` (in Edge, `edge://extensions`) and turn on **Developer mode**.
+3. Click **Load unpacked** and choose the unzipped folder. Pin QRDX Wallet from the puzzle-piece menu.
+
+</Tab>
+<Tab value="Firefox">
+
+1. Download `qrdx-wallet-firefox.zip`. Keep it zipped.
+2. Open `about:debugging#/runtime/this-firefox` in a new tab.
+3. Click **Load Temporary Add-on…** and choose the zip. Firefox removes a temporary add-on when it restarts; load it again, or use the web app.
+
+</Tab>
+</Tabs>
 
 ## Your recovery phrase
 

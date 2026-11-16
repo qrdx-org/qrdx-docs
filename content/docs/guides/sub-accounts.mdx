@@ -1,0 +1,54 @@
+---
+title: Accounts and sub-accounts
+description: Trade from separate accounts under one wallet, and move funds between them.
+icon: Layers
+---
+
+A sub-account has its own balances, perps margin, orders and positions, and your wallet signs for it. Use one per strategy, or to keep a risky position apart from everything else: a liquidation in a sub-account touches only that sub-account's margin. Each wallet account can have up to 20.
+
+How they work on chain is in [Accounts](/docs/concepts/accounts#sub-accounts-and-vaults).
+
+## The account you trade as
+
+QRDX Trade always trades as one account: your wallet account (**Main account**) or one of its sub-accounts or vaults. It shows in two places:
+
+- **Beside the wallet button in the top bar.** The menu lists every account with its value in USD. Pick one to trade as it, or use **Transfer**, **New** or **Manage** at the foot of the menu. On a phone the menu is under the page menu.
+- **Above the order forms**, as **Trading account**. The forms show that account's balances and positions, and the wallet signs each order for it.
+
+Portfolio follows the same choice. The header names the sub-account while you trade as one.
+
+<Callout type="warn" title="Sub-accounts pay their own gas">
+  An order from a sub-account is paid for in QRDX from that sub-account, not your main account. If the account you trade as is empty or has no QRDX, a warning above the order form says so and links to a transfer that fills it in.
+</Callout>
+
+## Create one
+
+1. Open the account menu and choose **New**, or choose **New sub-account** on the **Accounts** page.
+2. Give it a name if you like (up to 32 characters). The name is stored on chain and **cannot be changed** later.
+3. Optionally, **fund it now**: pick an amount and a token from your main account. Creating and funding then take a single approval.
+4. Leave **Trade as it once it is created** ticked to switch to it straight away.
+
+The dialog shows how many of the 20 you have used.
+
+## Move funds
+
+**Transfer**, from the account menu or the Accounts page, moves QRDX or a token between any two of your accounts:
+
+- **Main → sub-account** and **sub-account → main**: one transfer.
+- **Sub-account → sub-account**: two transfers through your main account, signed with one approval.
+
+**Max** leaves the fee reserve behind when you send QRDX from your main account, since that account pays the transfer's gas. If the account you are funding has no QRDX, the dialog offers to send QRDX instead.
+
+Funds arrive on the account's spot balance. To use them as perps margin, trade as that account and deposit from the Perps order form.
+
+## The Accounts page
+
+[trade.qrdx.org/accounts](https://trade.qrdx.org/accounts) (under **More**) is where you manage everything together:
+
+- Totals: the value of all your accounts, how many sub-accounts are funded, perps equity and open positions, and open orders.
+- One row per account with its value, holdings, perps equity and open orders. A sub-account's row has **Deposit** and **Withdraw** (transfers to and from it), a vault's links to its page, and every row has **Trade as**. Expand a row for its balances, positions and orders.
+- Your fee tier and referral code, the trading keys sites have added, and the dead man's switch.
+
+## From code
+
+`GET /api/v1-test/accounts/{address}/family` on the [trade API](/docs/build/trade-api#accounts-and-pnl) returns the wallet account and every account it signs for, with balances, gas, perps and orders, in one read.

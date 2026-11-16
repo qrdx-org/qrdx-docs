@@ -45,14 +45,33 @@ Each QRDX Wallet account has both credentials, and on QRDX they are **two ledger
 
 To trade, fund the `0xPQ…` address. The explorer shows one history for both forms of the same account.
 
+## Sub-accounts and vaults
+
+A post-quantum account can open up to 20 **sub-accounts** (`SUBACCOUNT_CREATE`, with an optional name of up to 32 characters that cannot be changed later). Each is a separate ledger account with its own balances, perps margin, orders and positions, at an address no key holds:
+
+```text
+0xSUBA + blake2b("subaccount:" ‖ master ‖ ":" ‖ index, 18 bytes)
+```
+
+Only the master's signature moves it: `SUBACCOUNT_TRANSFER` moves QRDX or a token in (`to_sub`) or out (`from_sub`), and an exchange transaction the master signs with the sub-account as `sender` trades as it. A sub-account **pays its own gas**, so it needs some QRDX before it can trade. Funds go from one sub-account to another through the master: two transfers, which QRDX Trade sends with one approval.
+
+A **user vault** (`0xUVLT…`, `VAULT_CREATE`) works the same way for its leader, except that others deposit into it for shares, and its leader pays its gas.
+
 ## Protocol accounts
 
-The exchange holds its own balances under protocol addresses that no key can sign for:
+The protocol holds balances under addresses that no key can sign for. Each is a prefix plus 36 hex characters:
 
 | Prefix | Holds |
 | --- | --- |
 | `0xPOOL…` | a pool's reserves |
 | `0xCLOB…` | an order book's escrow (funds of resting orders) |
 | `0xPERP…` | all perps collateral (the clearinghouse) |
+| `0xSUBA…` | a sub-account, signed for by its master |
+| `0xUVLT…` | a user vault, traded by its leader |
+| `0xHLPV…` | the perps backstop vault; `0xPROT…` owns the protocol's own vault shares |
+| `0xFEES…` | the stakers' share of trading fees, until an epoch pays it out |
+| `0xVETO…` | QRDX locked against governance proposals |
+| `0xBRDG…` | the bridge's mint authority |
+| `0xQNSA…` | QRDX names' mint authority |
 
-They appear in trades and transfers; the wallet refuses them as recipients.
+Multisigs have their own derived form, `0xPQMS…`, signed for by their members. All of these appear in trades and transfers, and the explorer opens each as an account; the wallet refuses them as recipients.

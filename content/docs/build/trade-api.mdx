@@ -54,15 +54,23 @@ A read-only API over the native exchange. It serves trade.qrdx.org and anyone el
 
 ## Accounts and PnL
 
-<RestPlayground api="trade" path="/accounts/0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc/pnl" note="Realized and open PnL from the account's fills: spot on an average-cost basis per market, perps as the clearinghouse realized them. USD at today's prices." />
+<RestPlayground api="trade" path="/accounts/0xPQF024d7895096D4Cd86fD4bC68e526FbdE8373e83C78F2CaEeE9279249201aCbc/pnl" note="Realized and open PnL from the account's trades: spot (book fills and pool swaps) on a signed average-cost basis per market, perps as the clearinghouse realized them. USD at today's prices." />
 
 | Endpoint | |
 | --- | --- |
 | `GET /accounts/{address}[?tokens=0x…,0x…]` | balances (with what is in orders), spot orders oriented to their markets, liquidity positions, the perps account, the exchange nonce |
-| `GET /accounts/{address}/pnl` | totals, a cumulative realized PnL series, and PnL per market |
+| `GET /accounts/{address}/family[?tokens=]` | a wallet account and every sub-account and vault it signs for: balances, the QRDX it pays gas with, perps summary, spot orders and triggers |
+| `GET /accounts/{address}/pnl` | totals, a PnL series, the spot trades behind it, and PnL per market |
 | `GET /accounts/{address}/control` | its trading agents, sub-accounts, the vaults it leads, its fee tier and referral |
 | `GET /accounts/{address}/history?kind=trades\|orders&cursor=` | its fills or order events from the node's trading history |
 | `GET /receipts/{txHash}` | an exchange receipt, `404` while pending |
+
+### PnL
+
+- **Spot** is replayed from the account's own trades (`history_getTrades`: book fills and pool swaps, up to 5,000), each market oriented as `/trade/{base}/{quote}` shows it, on a signed average-cost basis in the quote token (`unit`). Selling more than was bought leaves `position` negative, measured against holding those coins and realized when they are bought back. Open positions are marked at `last`, the pool price where there is a pool.
+- **Perps** use the PnL the clearinghouse realized on each fill (`perp_getEvents`), in collateral units (`perpUnit`), plus unrealized PnL at mark.
+- `series` has a point at each spot trade and perps realization: `realizedUsd` so far, and `pnlUsd` with open spot positions added. `trades` lists the newest 300 spot trades (`time`, `market`, `side`, `amount`, `price`, `base`, `quote`) for chart markers.
+- USD values use today's prices; markets whose quote has no USD price are listed in `totals.unpriced`. `window.truncated` says whether history was cut off.
 
 ## The asset object
 

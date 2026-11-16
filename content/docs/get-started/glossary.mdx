@@ -16,9 +16,11 @@ icon: BookA
 | **ML-DSA-65** | The Module-Lattice Digital Signature Algorithm at security category 3, standardised by NIST in FIPS 204 (formerly CRYSTALS-Dilithium3). QRDX's post-quantum signature. Public keys are 1,952 bytes, signatures 3,309 bytes. |
 | **Native token** | A fungible token that is data in consensus (a registry entry plus balances), not a contract. Every native token is also an ERC-20 inside the EVM. See [Native tokens](/docs/concepts/native-tokens). |
 | **Oracle price** | The stake-weighted median of the external prices validators vote on chain, used by perps. |
+| **Protocol account** | An address the protocol holds funds at and no key signs for: a pool's reserves (`0xPOOL…`), a book's escrow (`0xCLOB…`), the clearinghouse (`0xPERP…`) and others. See [Accounts](/docs/concepts/accounts#protocol-accounts). |
 | **Pool** | A concentrated-liquidity automated market maker for one pair at one fee tier. |
 | **`0xPQ…` address** | A post-quantum account's address: `0xPQ` and the first 32 bytes of keccak256 of its ML-DSA-65 public key, checksummed. |
 | **QRDX Connect** | The encrypted relay that lets a site reach QRDX Wallet on another device by QR code. |
 | **Slot** | 250 milliseconds. Each slot has one proposer; a slot may pass without a block. |
+| **Sub-account** | A separate account (`0xSUBA…`) with its own balances, margin and positions, signed for by the wallet account that created it; up to 20 each. It pays its own gas. |
 | **Testnet** | The public test network. Its tokens have no value. |
 | **Type `0x51` transaction** | An EVM transaction signed with an ML-DSA-65 key (`0x51` is ASCII `Q`). The sender is derived from the embedded public key. |

@@ -4,15 +4,15 @@ description: Everything an account holds, and how its trades have done.
 icon: ChartPie
 ---
 
-[trade.qrdx.org/portfolio](https://trade.qrdx.org/portfolio) shows the connected account; add `?address=0xPQ…` to view any account read-only (the explorer links there from every account page).
+[trade.qrdx.org/portfolio](https://trade.qrdx.org/portfolio) shows the account you trade as: your wallet account, or the [sub-account](/docs/guides/sub-accounts) or vault you have chosen, named in the header. Add `?address=` with a `0xPQ…`, `0xSUBA…` or `0xUVLT…` address to view any account read-only (the explorer links there from every account page).
 
 ## What it shows
 
 - **Account value**: every token balance (including what is escrowed in open orders) and perps equity, valued in USD.
 - **Total PnL**: realized plus open, with the win rate and volume traded.
-- **Profit and loss chart**: cumulative realized PnL over 24 hours, 7 days, 30 days or everything recorded, with a dashed segment to *now* that adds open positions at the current price.
+- **Profit and loss chart**: PnL over 24 hours, 7 days, 30 days or everything recorded, with a step at each trade, realized and open together. Spot buys and sells are marked on the line (an up arrow for a buy, a down arrow for a sell); hover one for what was traded and at what price. A dashed segment runs to *now*, with open positions at the current price.
 - **Allocation**: each holding's USD value and share.
-- **PnL by market**: fills, volume, realized and open PnL, position and average cost per market.
+- **PnL by market**: trades, volume, realized and open PnL, position and average price per market. A negative position is marked **net sold**.
 - **Balances, open orders, liquidity positions, perps positions and orders**, with cancel and edit buttons for your own orders.
 
 ## Exports
@@ -24,13 +24,15 @@ icon: ChartPie
 
 The chain keeps every trade, so PnL is rebuilt from the account's fills:
 
-- **Spot**, per market, on an **average-cost** basis in the market's quote token: buying adds to the position at its price; selling realizes (sell price − average cost) × amount. What you still hold is marked at the market's last price.
+- **Spot**: the account's own trades, both order-book fills and pool swaps, read from the node's trading history. Each market is read the way the site shows it (QRDX/USDC, not USDC/QRDX) and kept on an **average-cost** basis in its quote token: buying adds to the position at its price, and selling realizes (sell price − average cost) × amount.
+- **Selling coins you held before** (or received by transfer) is measured against having kept them: the position goes negative, its open PnL is what you sold for minus what those coins are worth now, and buying them back realizes it. Selling 100 QRDX at 818 USDC with the pool now at 817 shows about +100 USDC.
+- What is still open is marked at the pool's current price, or the last trade where there is no pool.
 - **Perps**: the profit or loss the clearinghouse realized on each fill, in collateral units, plus open positions' unrealized PnL at the mark price.
 
 USD values use **today's** prices, not the prices at the time, and are labelled as reference data.
 
 <Callout type="info" title="Limits">
-  The node keeps the most recent 1,000 trades per market and 1,000 perps events. Older history is not counted, and selling tokens you bought before that window (or received by transfer) realizes nothing, because their cost is unknown.
+  PnL reads up to the newest 5,000 spot trades and 1,000 perps events; older history is not counted. On a node without the trading history, spot falls back to the most recent 1,000 trades of each market.
 </Callout>
 
 From code: `GET /api/v1-test/accounts/{address}/pnl` on the [trade API](/docs/build/trade-api).

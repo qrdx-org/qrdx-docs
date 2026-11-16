@@ -11,27 +11,30 @@ QRDX is in **public testnet**. This page is the honest state of things; the [whi
 | Area | What works |
 | --- | --- |
 | Consensus | proof of stake with ML-DSA-65 validators, 250 ms slots, epoch finality, staking deposits and exits, delegation pools, slashing |
-| Accounts | classic and post-quantum accounts in one ledger; type-`0x51` post-quantum EVM transactions |
+| Accounts | classic and post-quantum accounts in one ledger; type-`0x51` post-quantum EVM transactions; [account control](/docs/security/wallet-security#account-control): controllers, `0xPQMS…` multisigs, delays, guardians and recovery; QRDX names (`name.qrdx`) |
 | EVM | contracts, logs, Ethereum JSON-RPC; native tokens as ERC-20/ERC-777, NFT collections as ERC-721 |
-| Native tokens | deploy, mint, burn, transfer, allowances, authorities, freezing, Token-2022-style extensions, NFTs |
-| Spot | order books and concentrated-liquidity pools for any pair, including native QRDX; best-venue swaps |
-| Perpetuals | zero-sum clearinghouse, cross and isolated margin, mark price, validator-voted oracle, funding, liquidations, backstop vault |
-| Data | market data, transaction index, WebSocket and SSE streams |
+| Native tokens | deploy, mint, burn, transfer, allowances, authorities, freezing, Token-2022-style extensions, NFTs, the unique-ticker auction |
+| Spot | order books and concentrated-liquidity pools for any pair, including native QRDX; best-venue swaps; stop and take-profit orders |
+| Perpetuals | zero-sum clearinghouse, cross and isolated margin, mark price, validator-voted oracle, funding, liquidations, backstop vault; perpetuals on native tokens |
+| Trading accounts | [sub-accounts](/docs/guides/sub-accounts), copy-trading vaults, trading keys (one-click trading), fee tiers and referrals, a free trading lane, a dead man's switch |
+| [Governance](/docs/guides/governance) | validators propose and vote, QRDX holders veto, a timelock before anything takes effect |
+| [Bridge](/docs/guides/bridge) | the consensus bridge: validators attest deposits in a source chain's lockbox, the protocol mints and burns; no assets are listed on testnet yet |
+| Quantum migration | an ECDSA account binds a post-quantum successor, on QRDX or proven from Ethereum (`MIGRATION_CLAIM`); the **Doomsday Protocol** stops ECDSA counting once a quantum canary is proven to have signed (`DOOMSDAY_PROVE`); testnet has no canaries configured |
+| Data | market data, trading history, transaction index, WebSocket and SSE streams |
 | Apps | QRDX Wallet (extension, web, iPhone), QRDX Trade, QRDX Explorer, profiles, QRDX Connect |
 
 ## Next
 
 - **Security audits** of the node, the wallet and the exchange, then **mainnet launch**.
-- **Bridged stablecoin** as perps collateral on mainnet (testnet uses native QRDX).
+- **A bridged USD stablecoin** listed on the bridge, as perps collateral on mainnet (testnet uses native QRDX).
+- **Quantum migration in the wallet**: binding a successor in one step.
 - **Registered chain ids.** Testnet's chain id may change before mainnet; read it from the node.
 
 ## Planned (whitepaper)
 
 These are designs, not features you can use yet:
 
-- **Bridges and asset shielding**: moving assets such as ETH and BTC onto QRDX as post-quantum-protected tokens, and back. A bridged asset will be a native token whose mint authority is the bridge.
-- **The Doomsday protocol**: a circuit breaker that would stop classic-to-quantum bridging if a quantum computer demonstrably breaks ECDSA, while still letting users bring shielded assets back.
-- **Governance** of protocol parameters.
-- **Post-quantum multisig** wallets and wider chain adapters.
+- **Asset shielding** beyond the bridge: moving assets such as ETH and BTC onto QRDX as post-quantum-protected tokens, and back, from chains the bridge does not read.
+- **Wider chain adapters** for the bridge.
 
 When these ship, these docs will document them.

@@ -107,6 +107,31 @@ The consensus bridge's ledger ([Bridge](/docs/guides/bridge)).
 
 <RpcPlayground method="bridge_getAssets" />
 
+## account
+
+Who may sign for an address, and what an address may sign for ([Account control and multisig](/docs/guides/account-control)).
+
+| Method | Params | |
+| --- | --- | --- |
+| `account_getAuthority` | `address` | Its policy: `controllers` (each with `members` when it is a multisig), `own_key`, `delay`, `guardians`, `pending_changes` (`change_id`, `action`, `value`, `due`), `agents` (trading keys); `subaccount_of`, `vault`, `multisig` or `migration` when they apply; `protocol_holder`. |
+| `account_getControlled` | `address` | What it can sign for or holds: `controls`, `subaccounts`, `vaults_led`, `agent_for`, `multisigs`, `guardian_of`, `names`. |
+
+<RpcPlayground method="account_getAuthority" params={["0xPQ815De541E3eB474F46489Ed3e84dE708d816fB91317045B79493383Ef5622400"]} editable />
+
+## qns
+
+QRDX names ([QRDX names](/docs/guides/names), [Resolving names](/docs/build/names)).
+
+| Method | Params | |
+| --- | --- | --- |
+| `qns_resolve` | `name` | The address it resolves to now, or `null` (unregistered, expired, or no address record). |
+| `qns_reverse` | `address` | Its primary name while that name resolves to it, else `null`. |
+| `qns_getName` | `name` | `name`, `owner`, `token_id`, `collection`, `expires`, `expired`, `available_from`, `address`, `resolves_to`, `texts`; `null` if unregistered. |
+| `qns_namesOf` | `address` | The names it owns. |
+| `qns_price` | `years?` (1) | QRDX for that many years of a name of 5 or more characters (×32 for 4 characters, ×128 for 3). |
+
+<RpcPlayground method="qns_price" params={[1]} />
+
 ## exchange
 
 Native tokens, NFTs, pools, spot order books, and submitting exchange transactions.

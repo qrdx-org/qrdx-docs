@@ -8,19 +8,24 @@ icon: BookA
 | --- | --- |
 | **Account id** | The 20-byte key an account's balance lives under. A `0x…` address is its own account id; a `0xPQ…` address maps to one by a fixed hash. See [Accounts](/docs/concepts/accounts). |
 | **Clearinghouse** | The perpetuals engine. It holds all perps collateral in one protocol account and settles profit and loss between traders' records. See [Perpetuals](/docs/concepts/perpetuals). |
+| **Controller** | An account bound to another account that may sign anything for it, withdrawals included. See [Account control](/docs/guides/account-control). |
+| **Doomsday Protocol** | What happens when ECDSA is proven broken: from that block, ECDSA keys stop signing on QRDX and classic accounts act only through successors bound beforehand. See [Quantum migration](/docs/guides/quantum-migration). |
 | **Epoch** | 32 slots (8 seconds). Finality is tracked per epoch. |
 | **Exchange nonce** | A per-account counter for exchange transactions, separate from the account nonce used by EVM transactions. |
 | **Exchange transaction** | A JSON transaction for the native exchange and native tokens (orders, swaps, pools, perps, token operations), signed with an ML-DSA-65 key. See [Exchange transactions](/docs/build/exchange-transactions). |
 | **Funding** | Hourly payments between perpetual longs and shorts that keep the contract price close to the oracle price. |
 | **Mark price** | The price perps margin, liquidations and unrealized PnL use: a robust blend of the oracle price and the order book, held within ±5 % of the oracle. |
 | **ML-DSA-65** | The Module-Lattice Digital Signature Algorithm at security category 3, standardised by NIST in FIPS 204 (formerly CRYSTALS-Dilithium3). QRDX's post-quantum signature. Public keys are 1,952 bytes, signatures 3,309 bytes. |
+| **Multisig** | An m-of-n post-quantum account (`0xPQMS…`) whose address is derived from its members' keys and threshold. See [Account control](/docs/guides/account-control#multisig). |
 | **Native token** | A fungible token that is data in consensus (a registry entry plus balances), not a contract. Every native token is also an ERC-20 inside the EVM. See [Native tokens](/docs/concepts/native-tokens). |
 | **Oracle price** | The stake-weighted median of the external prices validators vote on chain, used by perps. |
 | **Protocol account** | An address the protocol holds funds at and no key signs for: a pool's reserves (`0xPOOL…`), a book's escrow (`0xCLOB…`), the clearinghouse (`0xPERP…`) and others. See [Accounts](/docs/concepts/accounts#protocol-accounts). |
 | **Pool** | A concentrated-liquidity automated market maker for one pair at one fee tier. |
 | **`0xPQ…` address** | A post-quantum account's address: `0xPQ` and the first 32 bytes of keccak256 of its ML-DSA-65 public key, checksummed. |
 | **QRDX Connect** | The encrypted relay that lets a site reach QRDX Wallet on another device by QR code. |
+| **QRDX name** | A `name.qrdx` that resolves to an address, held as an NFT. See [QRDX names](/docs/guides/names). |
 | **Slot** | 250 milliseconds. Each slot has one proposer; a slot may pass without a block. |
 | **Sub-account** | A separate account (`0xSUBA…`) with its own balances, margin and positions, signed for by the wallet account that created it; up to 20 each. It pays its own gas. |
+| **Successor** | The post-quantum account a classic `0x` account binds as its controller, so it keeps working after ECDSA breaks. See [Quantum migration](/docs/guides/quantum-migration). |
 | **Testnet** | The public test network. Its tokens have no value. |
 | **Type `0x51` transaction** | An EVM transaction signed with an ML-DSA-65 key (`0x51` is ASCII `Q`). The sender is derived from the embedded public key. |

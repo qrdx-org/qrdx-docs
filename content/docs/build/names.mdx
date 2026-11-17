@@ -1,0 +1,61 @@
+---
+title: Resolving names
+description: Accept name.qrdx wherever your app takes an address, and show names for addresses, safely.
+icon: AtSign
+---
+
+QRDX names (`name.qrdx`) resolve on chain, through JSON-RPC or from a contract. An app that takes an address should accept a name, and an app that shows addresses should show the primary name beside them. How names work for users is in the [names guide](/docs/guides/names).
+
+## Name to address
+
+`qns_resolve(name)` returns the address a name points to now, or `null` when the name is not registered, has expired, or has no address record. It accepts upper case and a missing `.qrdx`; an invalid name is an error.
+
+<RpcPlayground method="qns_resolve" params={["alice.qrdx"]} editable />
+
+## Address to name
+
+`qns_reverse(address)` returns the address's **primary name**, or `null`. The node returns a name only while it still resolves to that address, so you never need to check it again yourself.
+
+<RpcPlayground method="qns_reverse" params={["0xPQ815De541E3eB474F46489Ed3e84dE708d816fB91317045B79493383Ef5622400"]} editable />
+
+## Everything about a name
+
+`qns_getName(name)` returns its owner, NFT token id, expiry, when it becomes available to others, its address record, where it resolves now, and its text records. `qns_namesOf(address)` lists the names an address owns.
+
+<RpcPlayground method="qns_getName" params={["alice.qrdx"]} editable />
+
+| Field | |
+| --- | --- |
+| `owner` | Who holds the name's NFT |
+| `token_id` | `blake2b-256` of the name, in the `QNS` collection |
+| `expires`, `expired` | Block time it expires, and whether it has |
+| `available_from` | When anyone may register it: expiry plus the 30-day grace period |
+| `address` | The address record as set |
+| `resolves_to` | Where it resolves now: `null` while expired; its current owner when the records were set by a previous owner |
+| `texts` | Text records, key to value |
+
+## From a contract
+
+The exchange read precompile at `0x0000000000000000000000000000000000000400` resolves names for EVM contracts:
+
+```solidity
+interface IQrdxExchangeRead {
+    /// The account id a QRDX name resolves to; address(0) if it resolves nowhere.
+    function resolve(string calldata name) external view returns (address);
+}
+```
+
+It returns the 20-byte account id, so a name pointing at a `0xPQ…` account gives that account's id: the address it has inside the EVM.
+
+## Doing it safely
+
+- **Show the address a name resolved to** before the user confirms, and send to that address. QRDX Wallet does this in its send form.
+- **Resolve again when you send.** A name's owner can point it elsewhere at any time; a result from minutes ago may be stale.
+- **Don't store names in place of addresses** for anything that moves funds later. Store the address, and the name for display.
+- **Treat text records as untrusted input.** Anyone who owns a name writes them.
+
+## Prices
+
+`qns_price(years)` returns the price of a name of 5 or more characters for that many years. A 4-character name costs 32 times that, a 3-character name 128 times.
+
+<RpcPlayground method="qns_price" params={[1]} />

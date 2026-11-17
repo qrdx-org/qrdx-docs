@@ -1,0 +1,64 @@
+---
+title: QRDX names
+description: Register name.qrdx, point it at an account, make it your primary name, renew it and transfer it.
+icon: AtSign
+---
+
+A QRDX name, such as `alice.qrdx`, stands for an address. Send to a name instead of a 70-character `0xPQ…` address, and show a name as yours in wallets and the explorer. Names are part of the protocol (QNS, the QRDX Name Service): no contract and no company keeps the registry.
+
+Each name is an **NFT** in the protocol's `QNS` collection. It transfers, shows in wallets, can be sold, and works in the EVM as an ERC-721, like any NFT.
+
+## Register a name
+
+In QRDX Wallet, open **Settings → Names**:
+
+1. Type the name you want. The wallet says whether it is free and what it costs.
+2. Choose how many years, 1 to 10.
+3. Approve. The name points at your account and, unless you untick it, becomes your **primary name** in the same approval.
+
+| Length | Price a year |
+| --- | --- |
+| 5 characters or more | 0.0125 QRDX |
+| 4 characters | 0.4 QRDX (32×) |
+| 3 characters | 1.6 QRDX (128×) |
+
+The price goes to the treasury, on top of the gas.
+
+<RpcPlayground method="qns_price" params={[1]} note="QRDX for one year of a name of 5 or more characters. Shorter names cost the multiples above." />
+
+**What a name can be.** 3 to 59 characters of `a`–`z`, `0`–`9` and `-`, not starting or ending with a hyphen. Names are lowercased, and the `.qrdx` may be left off when registering.
+
+## Where a name points
+
+A name has an **address record**: where it resolves. Registering points it at the account that registers it, or at the `target` you give. Point it elsewhere, or clear it, at any time. A name can also hold up to 16 **text records** (a key of up to 32 characters, a value of up to 256), such as a website or a handle.
+
+Records are set by the name's owner: whoever holds its NFT, an account it approved for that NFT, or an operator.
+
+<RpcPlayground method="qns_resolve" params={["alice.qrdx"]} editable note="null: the name is not registered, has expired, or has no address record. Try a name you know." />
+
+## Your primary name
+
+Your **primary name** is the reverse record: the name wallets, the explorer and other apps show for your address. It counts only while that name resolves to your account. Transfer or sell the name, point it elsewhere, or let it expire, and your address shows no name until you set another.
+
+## Renew
+
+A name resolves until it **expires**. Renew it from Settings → Names, a year at a time, up to 10 years ahead. Anyone may pay to renew any name, so a friend or a team can keep a name alive.
+
+After expiry comes a **30-day grace period**: the name does not resolve, but only renewal is open, so no one else can take it. After the grace period, anyone may register it; the old NFT is burned and its records cleared.
+
+## Transfer or sell
+
+Transfer the name's NFT like any NFT, or list it on an NFT market. **Records belong to the holder who set them**: once the NFT has a new owner, the old records stop counting, the name resolves to its new owner, and it carries no text records until the new owner sets them. A name never keeps resolving to its seller after a sale.
+
+Burning the NFT gives the name up at once.
+
+## Operations
+
+| Op | # | Params | Who | Gas |
+| --- | --- | --- | --- | --- |
+| `QNS_REGISTER` | 71 | `name`, `years?` (1–10, default 1), `target?` (default the sender) | anyone | 80,000 + the price |
+| `QNS_RENEW` | 72 | `name`, `years` | anyone | 40,000 + the price |
+| `QNS_SET_RECORD` | 73 | `name`, `key` (`address` or a text key), `value` (`""` clears) | the name's owner | 30,000 |
+| `QNS_SET_PRIMARY` | 74 | `name` (`""` clears) | the account it should name | 25,000 |
+
+Building an app that accepts names? See [Resolving names](/docs/build/names).

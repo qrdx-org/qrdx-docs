@@ -1,0 +1,89 @@
+---
+title: Account control and multisig
+description: Bind controllers and multisigs to an account, put a delay on changes, turn a key off, and name recovery guardians.
+icon: KeyRound
+---
+
+Who may sign for an account is part of the chain's state. An account can bind other wallets to it as **controllers**, turn its **own key** off, put a **delay** on changes its own key makes, and name **guardians** who can recover it. A **multisig** (`0xPQMS…`) signs like any other key. The rules apply everywhere the account signs: on the exchange and in the EVM.
+
+Manage all of it in QRDX Wallet under **Settings → Account control**, or read it for any address:
+
+<RpcPlayground method="account_getAuthority" params={["0xPQ815De541E3eB474F46489Ed3e84dE708d816fB91317045B79493383Ef5622400"]} editable />
+
+## A setup that survives a stolen key
+
+The usual setup is the wallet you use every day bound to a cold one, or to a 2-of-3 multisig of your devices, with a delay:
+
+1. **Bind a controller.** The cold wallet (or the multisig) may now sign anything for your everyday account.
+2. **Set a delay**, for example a day. Any change your everyday key signs, such as binding another controller or turning a key off, now waits a day in the open.
+3. **If the everyday key is stolen**, the thief's attempt to bind their own controller sits in the waiting list for a day. The controller cancels it, or turns the stolen key off at once.
+
+With its own key off, the everyday address signs nothing at all, on the exchange or in the EVM. Its funds move only by its controllers.
+
+<Callout type="warn">A controller has full authority over the account, withdrawals included. Bind only wallets you control, and prefer a multisig for the cold side.</Callout>
+
+## The policy
+
+| Part | What it does |
+| --- | --- |
+| **Controllers** | Up to 5 accounts, a `0xPQ…` key or a `0xPQMS…` multisig, that may sign **anything** for the account |
+| **Own key** | Whether the account's own key may still sign. On by default. Off: only controllers sign for it |
+| **Delay** | How long a change signed by the account's own key waits before it applies. None by default; at most 30 days |
+| **Guardians** | Up to 7 accounts, how many must agree, and a recovery delay (1 to 30 days, 7 by default) |
+
+**Controllers are the root of trust.** A change a controller signs applies at once, and any controller may cancel a waiting change. A change the account's own key signs waits out the delay, except lengthening the delay, which applies at once. A waiting change applies in the first block after it is due, unless the own key was turned off meanwhile or the change no longer fits the policy. At most 10 changes wait per account.
+
+Rules that always hold:
+
+- An account whose own key is off keeps at least one controller.
+- A controller is never the account itself, and a controller of a controller is not a controller. To need several signers, make the controller a multisig.
+- A key whose own account turned it off signs for nothing: not as a controller, not as a trading key.
+- Trading keys, sub-account masters and vault leaders cannot change a policy.
+
+## Acting for an account
+
+A controller signs exchange transactions with `sender` set to the account and `signer` set to itself. Any operation is allowed, withdrawals included. The nonce comes from the `sender|signer` lane (`exchange_getNonce(address, signer)`), and the account pays the gas.
+
+In the EVM, a type-`0x51` transaction signed by a controller with `on_behalf_of` set to the account runs as the account: value leaves it and contracts see it as `msg.sender`. The controller pays that transaction's gas.
+
+`account_getControlled` lists what an address can sign for: accounts it controls, sub-accounts, vaults it leads, multisigs it is a member of, accounts it guards and names it owns.
+
+<RpcPlayground method="account_getControlled" params={["0xPQ815De541E3eB474F46489Ed3e84dE708d816fB91317045B79493383Ef5622400"]} editable />
+
+## Multisig
+
+A `0xPQMS…` address is derived from an m-of-n keyset: its members' sorted ML-DSA-65 public keys and its threshold. The same keyset always gives the same address, and nothing about it can change; a different set of members is a different multisig.
+
+- A transaction signed by a multisig carries the keyset and at least m members' signatures. The node derives the address from the keyset, never from what the transaction claims.
+- A keyset that signs transactions holds at most 20 keys.
+- Each member's signature costs gas: 20,000 on the exchange, 40,000 in the EVM.
+- A multisig can be an account in its own right (the `sender`) or a controller of another account (the `signer`).
+
+QRDX Wallet binds a multisig as a controller and shows its members and threshold. Signing as a multisig takes software that collects the members' signatures; the wallet does not coordinate that yet.
+
+## Recovery guardians
+
+Guardians recover an account whose keys are all lost:
+
+1. A guardian backs a new controller for the account with `ACCOUNT_RECOVER`. Backing another one replaces its backing; an empty `new_controller` withdraws it.
+2. When enough guardians back the same controller, a recovery is queued, due after the recovery delay. It shows in `account_getAuthority`'s `pending_changes`.
+3. Until it is due, the account's own key or any controller can cancel it.
+4. When due, the new controller **replaces every other controller** and the account's own key is turned off.
+
+Naming guardians is a policy change like any other: signed by the own key, it waits out the delay. So a stolen key cannot quietly name its own guardians and recover the account to itself.
+
+## Trading keys
+
+One-click trading in QRDX Trade approves a **trading key** (an agent) for your account. It may place and cancel orders, never withdraw or transfer. A trading key can carry a daily limit on what it places, counted at full order size, so a stolen bot key can only trade so much. Account control in the wallet lists every trading key with its expiry, and revokes them.
+
+## Limits
+
+- **Classic `0x` accounts** sign with ECDSA. They can bind a post-quantum controller through the EVM, which is how [quantum migration](/docs/guides/quantum-migration) works on QRDX.
+- **A controller has full authority.** There is no partial controller; for limited authority, use a trading key.
+
+## Operations
+
+| Op | # | Params | Signed by | Gas |
+| --- | --- | --- | --- | --- |
+| `ACCOUNT_POLICY` | 70 | `action`: `add_controller` / `remove_controller` (`controller`), `own_key` (`enabled`), `delay` (`seconds`), `guardians` (`guardians`, `threshold`, `recovery_delay`; `[]` clears), `cancel` (`change_id`) | the account, or a controller as `signer` | 40,000 |
+| `ACCOUNT_RECOVER` | 75 | `account`, `new_controller` (`""` withdraws the backing) | a guardian | 40,000 |

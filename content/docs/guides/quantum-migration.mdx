@@ -1,0 +1,104 @@
+---
+title: Quantum migration
+description: Bind a post-quantum successor to a classic 0x account before ECDSA breaks, and what the Doomsday Protocol does when it does.
+icon: Siren
+---
+
+QRDX's own accounts (`0xPQ…`) sign with ML-DSA-65. Its classic `0x…` accounts sign with ECDSA (secp256k1), as on Ethereum: Ethereum wallets used on QRDX's EVM, and the deposit addresses of bridged tokens.
+
+A quantum computer large enough to run Shor's algorithm would derive an ECDSA private key from its public key, and every account that has ever signed a transaction has published its public key. QRDX prepares for that in two parts:
+
+- **Quantum migration.** While ECDSA still holds, a classic account names the post-quantum account that should control it: its **successor**.
+- **The Doomsday Protocol.** The moment ECDSA can no longer be trusted, it stops counting on QRDX. Accounts with a successor keep working through it; the others wait, untouched, for a recovery governance decides.
+
+<Callout type="warn">Bind a successor **before** it is needed. Once the Doomsday Protocol triggers, a binding made afterwards counts for nothing, and before it triggers, nothing on chain can tell a real owner from someone who has quietly broken the key.</Callout>
+
+## Do you need to?
+
+| You hold | What to do |
+| --- | --- |
+| Only a `0xPQ…` account | Nothing: it is post-quantum already |
+| QRDX in a classic `0x…` account, from MetaMask or another Ethereum wallet | Bind a `0xPQ…` account you control as its successor (below) |
+| Both addresses in QRDX Wallet | Each wallet account has a classic and a post-quantum address from the same recovery phrase. Keep funds on the post-quantum one, or bind it as the classic one's successor |
+
+## Bind a successor on QRDX
+
+A successor is ordinary [account control](/docs/guides/account-control): the classic account binds the `0xPQ…` account as its **controller**. A controller may sign anything for the account. The classic account does it with its own ECDSA key, from any Ethereum wallet, by calling the exchange write precompile at `0x0000000000000000000000000000000000000401`:
+
+```solidity
+function sendAction(string actionJson)
+```
+
+1. **Bind the successor.** Send:
+
+   ```json
+   {"op": "ACCOUNT_POLICY", "params": {"action": "add_controller", "controller": "0xPQ…your successor"}}
+   ```
+
+   With Foundry, for example:
+
+   ```bash
+   cast send 0x0000000000000000000000000000000000000401 "sendAction(string)" \
+     '{"op":"ACCOUNT_POLICY","params":{"action":"add_controller","controller":"0xPQ…"}}' \
+     --rpc-url https://test.qrdx.org/rpc --private-key "$KEY"
+   ```
+
+   The action runs at the start of the next block. Check it with `account_getAuthority`: the successor appears under `controllers`.
+
+2. **Later, if you choose, turn the ECDSA key off** with `{"action": "own_key", "enabled": false}`, sent the same way, or signed by the successor. From then on only the successor signs for the account.
+
+Signed by the classic key, a change counts as the account's own key: if the account has a delay, it waits it out.
+
+<RpcPlayground method="account_getAuthority" params={["0x0000000000000000000000000000000000000000"]} editable note="Put your 0x address in. After binding, the successor is listed under controllers; after a claim from Ethereum, under migration." />
+
+## Bind a successor from Ethereum
+
+An account on Ethereum, or another EVM chain QRDX bridges from, can commit to its successor on that chain:
+
+1. Call `register(bytes32 successor)` on the chain's `QRDXMigrationRegistry`, with the successor's 32 bytes (its `0xPQ` address without the prefix). It works once per account and can never be changed, so someone who breaks the key later cannot replace it. Only externally owned accounts can register.
+2. Anyone proves the commitment on QRDX with `MIGRATION_CLAIM`, a storage proof against a head of that chain the validators attested. The node checks that the registry holds exactly this successor and that it was registered before the Doomsday Protocol's time, then binds the successor as the account's controller.
+
+An externally owned account's address is derived from its key, so it is the same account on both chains, and the successor controls it on QRDX.
+
+<Callout type="info">Testnet has no migration registry configured yet (`MIGRATION_REGISTRIES` in `qrdx_chainSpec` is empty), so binding on QRDX is the way to do it there.</Callout>
+
+## What a successor can do
+
+The successor signs exchange transactions with `sender` set to the classic account and `signer` set to itself. It can trade, cancel and withdraw margin, move tokens and native QRDX (`TOKEN_TRANSFER`, with `token_address: "QRDX"` for QRDX), turn the classic key off, and add or remove other controllers. That is how the account's funds move once ECDSA is off.
+
+## The Doomsday Protocol
+
+### What triggers it
+
+- **A canary.** For each bridged chain, the chain spec names a canary account whose key nobody knows: its public key is derived from a hash (`sha256("QRDX doomsday canary")`), so no one chose it. It is funded with a bounty that only its key can move, so whoever first breaks ECDSA has a reason to do it in public. An account's nonce rises only when its key signs, so the canary's nonce above zero at a finalized head proves ECDSA is broken. Anyone proves it on QRDX with `DOOMSDAY_PROVE`; no vote is needed.
+- **Governance.** A `declare_quantum_emergency` proposal covers evidence the canaries do not show. It passes like any [governance](/docs/guides/governance) proposal: validators' vote, timelock, holders' veto.
+
+### What changes, from the block that triggers it
+
+- **Every ECDSA key on QRDX stops signing.** ECDSA-signed transactions are refused, and the `ECRECOVER` precompile recovers no address, so contracts that check ECDSA signatures (permits, ECDSA multisigs) refuse them.
+- **Classic accounts act only through successors** bound beforehand. Accounts without one wait, untouched, for a recovery governance decides.
+- **Trading keys that a classic account approved are revoked**, since its key may have approved them for whoever broke it.
+- **The bridge stops**: no deposits are minted and no withdrawals to the source chains are accepted.
+- **No later commitment counts.** A registration made at or after the Doomsday Protocol's time binds nothing; one made before can still be proven afterwards.
+
+Nothing undoes it except a protocol upgrade.
+
+### Watching it
+
+<RpcPlayground method="bridge_getDoomsday" note="triggered is null until the protocol triggers; canaries lists the canary watched on each bridged chain (none on testnet yet)." />
+
+The [Network page](https://qrdx.org/network) on qrdx.org shows the same state.
+
+## Limits
+
+- **A canary proves a break; it does not predict one.** An attacker who breaks ECDSA quietly would leave the canary alone. Governance's declaration is the backstop, and binding a successor early is the real protection.
+- **Before the trigger, ECDSA is trusted.** A binding made with a key that was already broken counts.
+- **Contract accounts** have no key and keep working through post-quantum transactions; only their own ECDSA checks fail.
+
+## Operations
+
+| Op | # | Params | Gas |
+| --- | --- | --- | --- |
+| `ACCOUNT_POLICY` | 70 | `action: "add_controller"`, `controller`; `action: "own_key"`, `enabled` | 40,000 |
+| `MIGRATION_CLAIM` | 85 | `chain`, `account`, `successor`, `time`, `height`, `account_proof`, `successor_proof`, `time_proof` | 300,000 |
+| `DOOMSDAY_PROVE` | 86 | `chain`, `height`, `account_proof` | 200,000 |

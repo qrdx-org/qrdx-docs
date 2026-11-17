@@ -11,7 +11,7 @@ QRDX is in **public testnet**. This page is the honest state of things; the [whi
 | Area | What works |
 | --- | --- |
 | Consensus | proof of stake with ML-DSA-65 validators, 250 ms slots, epoch finality, staking deposits and exits, delegation pools, slashing |
-| Accounts | classic and post-quantum accounts in one ledger; type-`0x51` post-quantum EVM transactions; [account control](/docs/security/wallet-security#account-control): controllers, `0xPQMS…` multisigs, delays, guardians and recovery; QRDX names (`name.qrdx`) |
+| Accounts | classic and post-quantum accounts in one ledger; type-`0x51` post-quantum EVM transactions; [account control](/docs/guides/account-control): controllers, `0xPQMS…` multisigs, delays, guardians and recovery; [QRDX names](/docs/guides/names) (`name.qrdx`) |
 | EVM | contracts, logs, Ethereum JSON-RPC; native tokens as ERC-20/ERC-777, NFT collections as ERC-721 |
 | Native tokens | deploy, mint, burn, transfer, allowances, authorities, freezing, Token-2022-style extensions, NFTs, the unique-ticker auction |
 | Spot | order books and concentrated-liquidity pools for any pair, including native QRDX; best-venue swaps; stop and take-profit orders |
@@ -19,7 +19,7 @@ QRDX is in **public testnet**. This page is the honest state of things; the [whi
 | Trading accounts | [sub-accounts](/docs/guides/sub-accounts), copy-trading vaults, trading keys (one-click trading), fee tiers and referrals, a free trading lane, a dead man's switch |
 | [Governance](/docs/guides/governance) | validators propose and vote, QRDX holders veto, a timelock before anything takes effect |
 | [Bridge](/docs/guides/bridge) | the consensus bridge: validators attest deposits in a source chain's lockbox, the protocol mints and burns; no assets are listed on testnet yet |
-| Quantum migration | an ECDSA account binds a post-quantum successor, on QRDX or proven from Ethereum (`MIGRATION_CLAIM`); the **Doomsday Protocol** stops ECDSA counting once a quantum canary is proven to have signed (`DOOMSDAY_PROVE`); testnet has no canaries configured |
+| [Quantum migration](/docs/guides/quantum-migration) | an ECDSA account binds a post-quantum successor, on QRDX or proven from Ethereum (`MIGRATION_CLAIM`); the **Doomsday Protocol** stops ECDSA counting once a quantum canary is proven to have signed (`DOOMSDAY_PROVE`); testnet has no canaries configured |
 | Data | market data, trading history, transaction index, WebSocket and SSE streams |
 | Apps | QRDX Wallet (extension, web, iPhone), QRDX Trade, QRDX Explorer, profiles, QRDX Connect |
 

@@ -21,7 +21,11 @@ A quantum computer large enough to run Shor's algorithm would derive an ECDSA pr
 | QRDX in a classic `0x…` account, from MetaMask or another Ethereum wallet | Bind a `0xPQ…` account you control as its successor (below) |
 | Both addresses in QRDX Wallet | Each wallet account has a classic and a post-quantum address from the same recovery phrase. Keep funds on the post-quantum one, or bind it as the classic one's successor |
 
-## Bind a successor on QRDX
+## In QRDX Wallet
+
+Open **Settings → Quantum safety**. The wallet binds the account's own `0xPQ` address as its classic address's successor with one approval from the classic key; the classic address pays the fee. Once the binding shows, the same page turns the classic key off and moves the classic address's QRDX to the quantum-safe one, both signed by the post-quantum key.
+
+## Bind a successor from another wallet
 
 A successor is ordinary [account control](/docs/guides/account-control): the classic account binds the `0xPQ…` account as its **controller**. A controller may sign anything for the account. The classic account does it with its own ECDSA key, from any Ethereum wallet, by calling the exchange write precompile at `0x0000000000000000000000000000000000000401`:
 

@@ -59,7 +59,17 @@ A `0xPQMS…` address is derived from an m-of-n keyset: its members' sorted ML-D
 - Each member's signature costs gas: 20,000 on the exchange, 40,000 in the EVM.
 - A multisig can be an account in its own right (the `sender`) or a controller of another account (the `signer`).
 
-QRDX Wallet binds a multisig as a controller and shows its members and threshold. Signing as a multisig takes software that collects the members' signatures; the wallet does not coordinate that yet.
+### Multisig in QRDX Wallet
+
+Under **Settings → Multisig**:
+
+1. **Each member copies their member key**, the account's public key, and sends it to whoever sets the multisig up. It is public and signs nothing by itself.
+2. **Add the multisig** with every member's key and the threshold. The address comes from the keys and the threshold alone, so every member who enters the same ones gets the same multisig.
+3. **Start a request** for the multisig itself, or for an account that bound it as a controller: send QRDX, bind or unbind a controller, turn an own key on or off, or cancel a waiting change.
+4. **Share the request** as text or a file. Each member opens it, checks what it does, signs, and shares it back. There is no server in between.
+5. **Submit** once enough members have signed. The account it acts for pays the fee.
+
+The nonce is fixed when the request starts. If another transaction uses it first, start the request again.
 
 ## Recovery guardians
 
@@ -71,6 +81,8 @@ Guardians recover an account whose keys are all lost:
 4. When due, the new controller **replaces every other controller** and the account's own key is turned off.
 
 Naming guardians is a policy change like any other: signed by the own key, it waits out the delay. So a stolen key cannot quietly name its own guardians and recover the account to itself.
+
+In QRDX Wallet, **Settings → Account control** lists the accounts you guard; open one to back the new controller its owner gives you, or to withdraw your backing. A recovery waiting against your own account shows at the top of the page with **Cancel**, and the wallet notifies you of it while it is open.
 
 ## Trading keys
 

@@ -36,7 +36,8 @@ const chain = await qrdx.request({ method: 'qrdx_chainInfo' })
 | `eth_requestAccounts`, `eth_accounts` | the shared `0x` addresses, selected first; `[]` while locked or not connected |
 | `qrdx_requestAccounts`, `qrdx_accounts` | each account's `address`, `pqAddress`, `pqAccountId`, `pqPublicKey`, `pqFingerprint` |
 | `eth_chainId`, `net_version`, `qrdx_chainInfo` | the active network |
-| `wallet_switchEthereumChain` | networks in the wallet's registry only (unknown: `4902`); asks the user |
+| `wallet_switchEthereumChain` | networks the wallet knows (unknown: `4902`); asks the user |
+| `wallet_addEthereumChain` | switches to a known network; adds an unknown one once its first `rpcUrls` entry (https) answers `eth_chainId` with the proposed id and the user approves |
 | `wallet_getPermissions`, `wallet_requestPermissions`, `wallet_revokePermissions` | EIP-2255; revoking disconnects the site |
 
 Events: `connect`, `disconnect`, `accountsChanged`, `chainChanged`.

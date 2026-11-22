@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 import { Provider } from '@/components/provider';
 import { siteUrl } from '@/lib/shared';
 import './global.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains' });
+const sans = Geist({ subsets: ['latin'], variable: '--font-geist' });
+const mono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${inter.className} ${inter.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${sans.className} ${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
         <Provider>{children}</Provider>
       </body>

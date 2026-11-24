@@ -55,8 +55,8 @@ Events: `connect`, `disconnect`, `accountsChanged`, `chainChanged`.
 
 | Method | |
 | --- | --- |
-| `eth_sendTransaction(tx)` | from the classic `0x` key; EIP-1559 fields are folded into a legacy `gasPrice`. Contract deployment from dApps is not supported. |
-| `qrdx_sendPQTransaction({ to, value, data?, gas? })` | from the post-quantum account, as a type-`0x51` transaction; `to` may be any address form |
+| `eth_sendTransaction(tx)` | from the classic `0x` key; EIP-1559 fields are folded into a legacy `gasPrice`. Without `to`, it deploys a contract: `data` is the code and constructor arguments. |
+| `qrdx_sendPQTransaction({ to?, value, data?, gas? })` | from the post-quantum account, as a type-`0x51` transaction; `to` may be any address form. Without `to`, it deploys a contract signed with ML-DSA-65 ([Smart contracts](/docs/build/smart-contracts)). |
 | `qrdx_sendExchangeTransaction({ op, params, gasLimit? })` | any [exchange operation](/docs/reference/operations), signed with the account's post-quantum key and next exchange nonce; returns `{ txHash, nonce }` |
 | `wallet_watchAsset({ type: 'ERC20', options: { address, symbol, decimals } })` | adds a token after the user approves |
 

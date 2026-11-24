@@ -13,6 +13,10 @@ QRDX uses **ML-DSA-65** for post-quantum signatures: the Module-Lattice Digital 
 | Recovers the signer from a signature | no: the public key travels with the signature | yes |
 | Broken by Shor's algorithm | no | yes |
 
+Try it: the lab below makes a real ML-DSA-65 key pair in your browser, with the library QRDX Wallet uses, and draws its public key and a signature one dot per byte (larger dots, larger values), beside a classic key and signature to scale. Sign a message, then change a word or click any byte of the signature to flip a bit: verification refuses it. Nothing leaves the page.
+
+<KeyLab />
+
 ## What is signed with it
 
 - **Every block and attestation.** Validators must use ML-DSA-65 keys; classic keys cannot validate.

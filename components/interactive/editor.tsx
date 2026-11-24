@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useTheme } from 'next-themes';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
+import { solidity } from '@replit/codemirror-lang-solidity';
 import { EditorView, keymap } from '@codemirror/view';
 import { oneDark } from '@codemirror/theme-one-dark';
 
@@ -23,14 +24,14 @@ export function CodeEditor({
 }: {
   value: string;
   onChange: (v: string) => void;
-  language: 'javascript' | 'json';
+  language: 'javascript' | 'json' | 'solidity';
   onRun?: () => void;
   minHeight?: string;
 }) {
   const { resolvedTheme } = useTheme();
   const extensions = useMemo(
     () => [
-      language === 'json' ? json() : javascript(),
+      language === 'json' ? json() : language === 'solidity' ? solidity : javascript(),
       EditorView.lineWrapping,
       keymap.of([
         {

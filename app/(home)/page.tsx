@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Boxes, Code2, KeyRound, LineChart, Search, Shield, Wallet } from 'lucide-react';
 import { LiveStatus } from '@/components/interactive/Live';
-import { LogoMark } from '@/components/brand/Logo';
+import { BlockPond } from '@/components/interactive/BlockPond';
 import { apps } from '@/lib/shared';
 
 const SECTIONS = [
@@ -16,22 +16,23 @@ const SECTIONS = [
 export default function HomePage() {
   return (
     <main className="flex-1">
-      <section className="mx-auto max-w-5xl px-4 pb-10 pt-16 text-center sm:pt-24">
-        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-fd-border bg-fd-card shadow-sm">
-          <LogoMark className="h-8 w-8" />
-        </div>
-        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">QRDX documentation</h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-fd-muted-foreground">
-          A blockchain secured by post-quantum signatures, with an exchange built into the protocol. Learn to use it, and build on it with
-          examples that run live against testnet, right in the page.
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link href="/docs/get-started/quickstart" className="inline-flex items-center gap-2 rounded-lg bg-fd-primary px-5 py-2.5 text-sm font-medium text-fd-primary-foreground hover:opacity-90">
-            Get started <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link href="/docs/build" className="inline-flex items-center gap-2 rounded-lg border border-fd-border bg-fd-card px-5 py-2.5 text-sm font-medium hover:bg-fd-accent">
-            <Code2 className="h-4 w-4" /> Build on QRDX
-          </Link>
+      <section className="relative isolate overflow-hidden">
+        <BlockPond className="absolute inset-0 -z-10 h-full w-full" />
+        <div className="mx-auto max-w-5xl px-4 pb-14 pt-20 text-center sm:pb-20 sm:pt-28">
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">QRDX documentation</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-fd-muted-foreground">
+            A blockchain secured by post-quantum signatures, with an exchange built into the protocol. Learn to use it, and build on it with
+            examples that run live against testnet, right in the page.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link href="/docs/get-started/quickstart" className="inline-flex items-center gap-2 rounded-lg bg-fd-primary px-5 py-2.5 text-sm font-medium text-fd-primary-foreground hover:opacity-90">
+              Get started <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link href="/docs/build" className="inline-flex items-center gap-2 rounded-lg border border-fd-border bg-fd-card px-5 py-2.5 text-sm font-medium hover:bg-fd-accent">
+              <Code2 className="h-4 w-4" /> Build on QRDX
+            </Link>
+          </div>
+          <p className="mt-10 font-mono text-[11px] text-fd-muted-foreground">Each ring is a testnet block as it commits. Touch the water.</p>
         </div>
       </section>
 

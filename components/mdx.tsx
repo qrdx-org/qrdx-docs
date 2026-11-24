@@ -7,6 +7,9 @@ import { CodeRunner } from '@/components/interactive/CodeRunner';
 import { RpcPlayground } from '@/components/interactive/RpcPlayground';
 import { RestPlayground } from '@/components/interactive/RestPlayground';
 import { LiveStatus } from '@/components/interactive/Live';
+import { KeyLab } from '@/components/interactive/KeyLab';
+import { EpochClock } from '@/components/interactive/EpochClock';
+import { ContractPlayground } from '@/components/interactive/ContractPlayground';
 
 export function getMDXComponents(components?: MDXComponents) {
   return {
@@ -21,6 +24,9 @@ export function getMDXComponents(components?: MDXComponents) {
     RpcPlayground,
     RestPlayground,
     LiveStatus,
+    KeyLab,
+    EpochClock,
+    ContractPlayground,
     ...components,
   } satisfies MDXComponents;
 }

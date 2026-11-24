@@ -2,7 +2,7 @@
 
 The documentation at [docs.qrdx.org](https://docs.qrdx.org): guides for QRDX Wallet, trading and the explorer, the concepts behind the chain, and developer references whose examples run live against testnet in the page.
 
-Built with [Fumadocs](https://fumadocs.dev) on Next.js 16 (MDX, static export, Orama search), themed like trade.qrdx.org and explorer.qrdx.org.
+Built with [Fumadocs](https://fumadocs.dev) on Next.js 16 (MDX, static export, Orama search), in the same monochrome as qrdx.org, trade.qrdx.org, explorer.qrdx.org and the wallet. The home page's backdrop (`BlockPond`) is a halftone pond that ripples with each testnet block from the stream and with the reader's pointer.
 
 ```bash
 pnpm install
@@ -27,6 +27,9 @@ Available in every page, besides Markdown: `Callout`, `Cards`/`Card`, `Steps`/`S
 | `<RestPlayground path="/get_ticker" query={{ market: "…" }} />` | a REST `GET` with editable query parameters; `api="trade"` or `api="profiles"` for those services |
 | `<CodeRunner example="pq-keys" />` | editable JavaScript that runs live (examples in `components/interactive/examples.ts`) |
 | `<LiveStatus />` | the chosen network's height, finalized epoch, block interval and chain id, streamed |
+| `<KeyLab />` | a real ML-DSA-65 key pair made in the browser; its public key and a signature drawn one dot per byte beside secp256k1's, to scale; flip a byte or change the message and verification refuses it |
+| `<EpochClock />` | the chosen network's slot clock (`/chain_spec` and the genesis block), the current epoch filling in with the blocks that arrive, and finality's lag |
+| `<ContractPlayground template="counter" />` | Solidity compiled in the browser (solc 0.8.30 from binaries.soliditylang.org, in a Web Worker, EVM Shanghai), deployed through QRDX Wallet signed post-quantum (`qrdx_sendPQTransaction`, no `to`) or with the classic key (`eth_sendTransaction`), then called: reads over JSON-RPC, writes through the wallet, events decoded with viem. Templates in `components/interactive/contracts.ts`; deployments remembered per network in the browser |
 
 Every component has a network menu (testnet, a local node, or any node URL), shared across the page and remembered per browser.
 

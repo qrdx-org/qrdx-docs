@@ -19,6 +19,10 @@ QRDX is a proof-of-stake chain in which **every validator signs with ML-DSA-65**
 
 Slot and epoch lengths, the delays and the staking rate are chain-spec parameters: read them from the node rather than hard-coding them (`/chain_spec`, `staking_getParams`).
 
+Here is the chosen network's clock, live: the current epoch's slots filling in, a dot where a block arrived, and the last epochs, solid once two-thirds of the weight has attested to them.
+
+<EpochClock />
+
 <RpcPlayground method="staking_getParams" />
 
 ## Weight

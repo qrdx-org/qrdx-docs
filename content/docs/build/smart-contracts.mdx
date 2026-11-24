@@ -1,0 +1,88 @@
+---
+title: Smart contracts
+description: Write, compile and deploy Solidity on QRDX from the page, signed post-quantum or with a classic key.
+icon: FileCode2
+---
+
+QRDX runs Ethereum contracts. Its EVM is py-evm at **Shanghai**, checked against Ethereum's own state tests: 1,460 of the 1,469 Shanghai tests agree, and the other 9 differ on purpose (below). Contracts, tooling and JSON-RPC work as on Ethereum; what QRDX adds is a second way to sign, with the account's **ML-DSA-65** key.
+
+## Try it
+
+Write a contract, compile it in your browser, and deploy it to testnet through [QRDX Wallet](/docs/guides/wallet). Pick the signer: **post-quantum** sends a type-`0x51` transaction signed with the account's ML-DSA-65 key; **classic** signs with its secp256k1 key, as on Ethereum. Then call it: reads go straight to the node, writes are approved in the wallet, and the receipt's events are decoded. You need a little testnet QRDX for gas ([Quickstart](/docs/get-started/quickstart#get-testnet-qrdx)).
+
+<ContractPlayground />
+
+The compiler is the official `solc` build, loaded into your browser the first time you compile (about 9 MB). Your deployments are remembered in this browser, per network.
+
+## Compile for Shanghai
+
+QRDX's EVM has no Cancun opcodes: no transient storage (`TSTORE`, `TLOAD`), no `MCOPY`, no blob opcodes. Solidity 0.8.25 and later target Cancun by default, so set the EVM version:
+
+<Tabs items={['Foundry', 'Hardhat', 'solc']}>
+<Tab value="Foundry">
+```toml title="foundry.toml"
+[profile.default]
+evm_version = "shanghai"
+
+[rpc_endpoints]
+qrdx_testnet = "https://test.qrdx.org/rpc"
+```
+
+```bash
+forge create src/Counter.sol:Counter --rpc-url qrdx_testnet --private-key "$KEY" --broadcast
+```
+</Tab>
+<Tab value="Hardhat">
+```js title="hardhat.config.js"
+module.exports = {
+  solidity: { version: '0.8.30', settings: { evmVersion: 'shanghai' } },
+  networks: {
+    qrdxTestnet: { url: 'https://test.qrdx.org/rpc', chainId: 7620, accounts: [process.env.KEY] },
+  },
+};
+```
+</Tab>
+<Tab value="solc">
+```json title="standard JSON input"
+{ "settings": { "evmVersion": "shanghai" } }
+```
+</Tab>
+</Tabs>
+
+These tools sign with a secp256k1 key. The node accepts legacy, EIP-2930 and EIP-1559 envelopes; QRDX burns the whole fee, so the priority fee is zero.
+
+## Where QRDX differs
+
+| | |
+| --- | --- |
+| Calls to `0x0100`–`0x0104` and `0x0202` | revert: retired precompiles keep their addresses, so a contract written against them fails loudly |
+| bn128 multiplication | costs 12,000 gas more than on Ethereum (it runs in Python) |
+| Fees | burned whole; no tips to the block's proposer |
+| Classic keys | an account can turn its ECDSA key off, and the Doomsday Protocol turns every one off ([Quantum migration](/docs/guides/quantum-migration)); after that, only post-quantum transactions move it |
+
+## Deploying post-quantum
+
+A type-`0x51` transaction carries the sender's ML-DSA-65 public key (1,952 bytes) and signature (3,309 bytes), and pays for verifying them:
+
+| Intrinsic gas | Classic | Post-quantum (`0x51`) |
+| --- | --- | --- |
+| Base | 21,000 | 21,000 |
+| Signature check | — | 40,000 |
+| Key and signature bytes | — | 16 a byte: 84,176 |
+| Contract creation | 32,000 | 32,000 |
+| Calldata (the code, for a deployment) | 4 a zero byte, 16 otherwise | the same |
+
+In a contract it deploys or calls, **`msg.sender` is the account's 20-byte account ID**, `keccak256("QRDX-ACCOUNT-ID-v1:pq:" ‖ address)`'s last 20 bytes, not the `0x` address of its classic key: the same account has two senders, one per key ([Accounts](/docs/concepts/accounts)). The contract's address comes from that sender and its nonce, as on Ethereum.
+
+From a dApp, deploy by leaving out `to` and putting the code (and constructor arguments) in `data`:
+
+```js
+// Post-quantum, from the account's 0xPQ key:
+const hash = await qrdx.request({ method: 'qrdx_sendPQTransaction', params: [{ data: bytecode }] })
+// Or with the classic key:
+const hash = await qrdx.request({ method: 'eth_sendTransaction', params: [{ from: account.address, data: bytecode }] })
+```
+
+The wallet shows a deployment as "Deploys a contract", with the size of its code. Then read the receipt: its `contractAddress` is the new contract.
+
+<RpcPlayground method="eth_getTransactionReceipt" params={["0x…"]} editable note="Paste a deployment's transaction hash: contractAddress is the new contract, status 0x1 means it succeeded." />
